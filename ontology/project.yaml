@@ -1,0 +1,78 @@
+project:
+  id: kafka:cedar-pollen-bi
+  name: Cedar Pollen BI
+  repository: https://github.com/KAFKA2306/cedar-pollen-bi
+  pages: https://kafka2306.github.io/cedar-pollen-bi/
+  version: 0.1.0
+  updated: 2026-07-30
+  core_ontology: https://raw.githubusercontent.com/KAFKA2306/know/main/ontology/causal-evidence-core.yaml
+  schema: https://raw.githubusercontent.com/KAFKA2306/know/main/ontology/project.schema.json
+
+purpose:
+  problem: Visualize official cedar male-flower-bud survey data without confusing a pollen-generation input with an observed or predicted airborne pollen count.
+  intended_decisions: [publish, update, mark_not_comparable, flag_source_change, reject]
+  success_conditions:
+    - Every prefectural value retains survey year, baseline definition, unit, source document, and comparison status.
+    - Flower-bud quantity, airborne pollen observation, and pollen forecast remain distinct concepts.
+    - Missing ten-year comparisons and excluded regions are explicitly represented.
+  falsification_conditions:
+    - A flower-bud ratio is presented as measured airborne pollen or forecast accuracy.
+    - Values from incompatible survey years or baselines are silently compared.
+    - A displayed value lacks an official source locator.
+
+scope:
+  included: [prefectures, regions, survey years, flower-bud quantities, ten-year-average ratios, source documents, derived bands, dashboard views]
+  excluded: [medical advice, unsupported pollen forecasts, private forecast-model performance claims]
+  temporal: Survey year, baseline period, source publication, retrieval, and dashboard build times are explicit.
+  abstraction_level: Public-data BI for one explanatory input used in pollen forecasting.
+
+competency_questions:
+  - Which official survey, year, and table support each displayed value?
+  - Is a value an observed flower-bud quantity, a ratio to baseline, a derived display band, or a forecast?
+  - Which prefectures are missing or not comparable and why?
+  - Which transformations produced regional summaries and thresholds?
+  - Does the deployed dashboard match the validated source snapshot?
+
+domain_mapping:
+  System: CedarPollenInputObservationSystem
+  State: [survey record state, comparability state, derived-band state, publication state]
+  Action: [acquire source, extract value, normalize region, calculate ratio, classify band, publish]
+  Process: [official-data acquisition, table extraction, normalization, calculation, visualization, deployment]
+  Observation: [official flower-bud survey value, baseline ratio, source document, deployed metric]
+  Model: [ratio calculation, regional grouping, display-band rule]
+  Requirement: [official sourcing, unit clarity, baseline identity, forecast-input distinction, missingness visibility]
+  Claim: [prefectural survey value, ratio to average, regional comparison, explanatory-input interpretation]
+  Evidence: [environment ministry document, table or row locator, calculation inputs, dataset hash, build output]
+  Decision: [publish, update, mark_not_comparable, flag_source_change, reject]
+
+claims_and_evidence:
+  assertion_types: [OfficialObservation, CalculatedValue, DerivedClassification, Interpretation, Forecast, DecisionAssertion]
+  required_evidence:
+    OfficialObservation: [official source URL, survey year, prefecture, field or table locator]
+    CalculatedValue: [formula, numerator, baseline, unit]
+    DerivedClassification: [threshold rule, input value]
+    Interpretation: [supporting observations, explicit limitation]
+  unknown_policy: Missing source, baseline, or comparability remains UNKNOWN or mark_not_comparable and is not imputed.
+
+decision_rules:
+  - id: publish-observation
+    when: Official source, year, prefecture, value, unit, and baseline context are present.
+    result: publish
+  - id: non-comparable-record
+    when: A valid baseline comparison is unavailable or the survey basis differs.
+    result: mark_not_comparable
+  - id: forecast-boundary
+    when: A claim converts flower-bud input directly into airborne pollen or forecast accuracy without a validated model.
+    result: reject
+
+provenance:
+  sources: [Japan Ministry of the Environment, Forestry Agency, Japan Meteorological Agency contextual materials]
+  generated_artifacts: [normalized dataset, ratios, bands, charts, map, static dashboard]
+  agents: [data extractor, calculation script, Astro build, GitHub Actions, human reviewer]
+  lineage: Each displayed value links to official source, survey year, baseline, transformation rule, and build version.
+
+validation:
+  structural: Validate prefecture identifiers, years, values, units, source URLs, and missingness states.
+  semantic: Separate flower-bud observations, ratios, display classifications, airborne observations, and forecasts.
+  evidence: Verify source locators, formulas, baselines, exclusions, and dataset hash.
+  publication: The deployed metrics and charts must match the validated dataset and retain the interpretation boundary.
