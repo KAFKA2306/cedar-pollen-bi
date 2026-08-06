@@ -1,0 +1,33 @@
+name: Data contract
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Compile validator
+        run: python -m py_compile scripts/validate_data_contract.py
+      - name: Validate contract fixture
+        run: python scripts/validate_data_contract.py tests/fixtures/valid-records.json
+      - name: Validate published datasets when present
+        shell: bash
+        run: |
+          shopt -s nullglob globstar
+          files=(data/**/*.json public/data/**/*.json)
+          if ((${#files[@]})); then
+            python scripts/validate_data_contract.py "${files[@]}"
+          else
+            echo "No published JSON dataset directory is currently tracked."
+          fi
