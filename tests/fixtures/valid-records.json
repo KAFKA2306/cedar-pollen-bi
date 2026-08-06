@@ -1,0 +1,25 @@
+{
+  "records": [
+    {
+      "record_id": "jp-13-2026-official-bud",
+      "prefecture_code": "13",
+      "prefecture_name_ja": "東京都",
+      "survey_year": 2026,
+      "metric_type": "official_flower_bud_observation",
+      "value": 1.0,
+      "unit": "example-only",
+      "baseline": null,
+      "comparison_status": "unknown",
+      "not_comparable_reason": null,
+      "source": {
+        "publisher": "Test fixture",
+        "document_url": "https://example.com/source.pdf",
+        "published_date": "2026-01-01",
+        "retrieved_at": "2026-08-06T00:00:00Z",
+        "locator": "fixture row 1",
+        "sha256": null
+      },
+      "transformation": null
+    }
+  ]
+}
