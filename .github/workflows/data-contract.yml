@@ -21,15 +21,15 @@ jobs:
         run: python -m py_compile scripts/validate_data_contract.py scripts/build_public_api.py tests/test_public_api.py
       - name: Validate contract fixture
         run: python scripts/validate_data_contract.py tests/fixtures/valid-records.json
-      - name: Validate published JSON datasets when present
+      - name: Validate record datasets when present
         shell: bash
         run: |
           shopt -s nullglob globstar
-          files=(data/**/*.json public/data/**/*.json)
+          files=(data/records/**/*.json public/data/**/*.json)
           if ((${#files[@]})); then
             python scripts/validate_data_contract.py "${files[@]}"
           else
-            echo "No published JSON record dataset is currently tracked."
+            echo "No JSON observation-record dataset is currently tracked."
           fi
       - name: Build deterministic API distribution
         run: python scripts/build_public_api.py
