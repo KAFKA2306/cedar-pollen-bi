@@ -20,6 +20,9 @@ REGIONS = {
 def sha256_bytes(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
+def json_bytes(obj) -> bytes:
+    return (json.dumps(obj, ensure_ascii=False, sort_keys=True, separators=(",", ":"))+"\n").encode()
+
 def load_rows() -> list[dict]:
     with SOURCE.open(encoding="utf-8", newline="") as f:
         rows = list(csv.DictReader(f))
@@ -33,57 +36,39 @@ def load_rows() -> list[dict]:
             raise ValueError(f"invalid or duplicate prefecture_code: {code}")
         seen.add(code)
         obs=int(row["observation_count_per_m2"])
-        if obs < 0:
-            raise ValueError(f"negative observation: {code}")
         base=int(row["baseline_average_count_per_m2"]) if row["baseline_average_count_per_m2"] else None
         ratio=int(row["official_comparison_percent"]) if row["official_comparison_percent"] else None
+        if obs < 0 or (base is not None and base <= 0):
+            raise ValueError(f"invalid observation/baseline: {code}")
         if base is None and ratio is not None:
             raise ValueError(f"ratio without baseline: {code}")
-        if base is not None:
-            expected=round(obs/base*100)
-            if abs(expected-ratio) > 1:
-                raise ValueError(f"official ratio mismatch: {code}: {ratio} vs {expected}")
-        result.append({
-            "record_id": f"moe:cedar-bud:{row['survey_year']}:{code}",
-            "prefecture_code": code,
-            "prefecture_name_ja": row["prefecture_name_ja"],
-            "region": REGIONS[code],
-            "survey_year": int(row["survey_year"]),
-            "observation": {"value": obs, "unit": "count_per_m2"},
-            "baseline": None if base is None else {"value": base, "unit": "count_per_m2", "note": row["baseline_note"]},
-            "official_comparison_percent": ratio,
-            "comparison_status": "not_comparable" if base is None else "comparable",
-            "source": {
-                "publisher": row["publisher"],
-                "document_url": row["source_url"],
-                "published_date": row["published_date"],
-                "retrieved_at": row["retrieved_at"],
-                "rights_note": row["rights_note"],
-            },
-        })
+        if base is not None and abs(round(obs/base*100)-ratio) > 1:
+            raise ValueError(f"official ratio mismatch: {code}")
+        result.append({**row,"region":REGIONS[code],"observation":obs,"baseline":base,"ratio":ratio})
     return result
-
-def json_bytes(obj) -> bytes:
-    return (json.dumps(obj, ensure_ascii=False, sort_keys=True, separators=(",", ":"))+"\n").encode()
 
 def main() -> int:
     rows=load_rows()
     OUT.mkdir(parents=True, exist_ok=True)
-    observations={"schema_version":"1.0.0","dataset":"moe_cedar_male_flower_bud_survey","survey_year":2025,"count":len(rows),"records":rows}
-    comparable=[r for r in rows if r["official_comparison_percent"] is not None]
+    comparable=[r for r in rows if r["ratio"] is not None]
     latest={
         "schema_version":"1.0.0","survey_year":2025,"prefecture_count":len(rows),"comparable_prefecture_count":len(comparable),
-        "max_official_comparison":max(({"prefecture_code":r["prefecture_code"],"prefecture_name_ja":r["prefecture_name_ja"],"percent":r["official_comparison_percent"]} for r in comparable),key=lambda x:x["percent"]),
-        "min_official_comparison":min(({"prefecture_code":r["prefecture_code"],"prefecture_name_ja":r["prefecture_name_ja"],"percent":r["official_comparison_percent"]} for r in comparable),key=lambda x:x["percent"]),
+        "max_official_comparison":max(({"prefecture_code":r["prefecture_code"],"prefecture_name_ja":r["prefecture_name_ja"],"percent":r["ratio"]} for r in comparable),key=lambda x:x["percent"]),
+        "min_official_comparison":min(({"prefecture_code":r["prefecture_code"],"prefecture_name_ja":r["prefecture_name_ja"],"percent":r["ratio"]} for r in comparable),key=lambda x:x["percent"]),
         "source_published_date":"2025-12-23","source_url":"https://www.env.go.jp/content/000365031.pdf"}
     region_counts={}; baseline_types={}
     for r in rows:
         region_counts[r["region"]]=region_counts.get(r["region"],0)+1
-        note=(r["baseline"] or {}).get("note","no baseline")
+        note=r["baseline_note"] or "no baseline"
         baseline_types[note]=baseline_types.get(note,0)+1
     facets={"schema_version":"1.0.0","regions":dict(sorted(region_counts.items())),"baseline_types":dict(sorted(baseline_types.items()))}
-    payloads={"observations.json":json_bytes(observations),"latest.json":json_bytes(latest),"facets.json":json_bytes(facets)}
-    for name,data in payloads.items(): (OUT/name).write_bytes(data)
+    payloads={
+        "observations.csv":SOURCE.read_bytes(),
+        "latest.json":json_bytes(latest),
+        "facets.json":json_bytes(facets),
+    }
+    for name,data in payloads.items():
+        (OUT/name).write_bytes(data)
     manifest={
         "schema_version":"1.0.0","dataset":"moe_cedar_male_flower_bud_survey",
         "source":{"path":str(SOURCE.relative_to(ROOT)),"sha256":sha256_bytes(SOURCE.read_bytes()),"publisher":"Ministry of the Environment, Japan","published_date":"2025-12-23","retrieved_at":"2026-08-07T17:14:09Z","document_url":"https://www.env.go.jp/content/000365031.pdf"},
