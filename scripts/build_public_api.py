@@ -71,7 +71,7 @@ def main() -> int:
         (OUT/name).write_bytes(data)
     manifest={
         "schema_version":"1.0.0","dataset":"moe_cedar_male_flower_bud_survey",
-        "source":{"path":str(SOURCE.relative_to(ROOT)),"sha256":sha256_bytes(SOURCE.read_bytes()),"publisher":"Ministry of the Environment, Japan","published_date":"2025-12-23","retrieved_at":"2026-08-07T17:14:09Z","document_url":"https://www.env.go.jp/content/000365031.pdf"},
+        "source":{"path":str(SOURCE.relative_to(ROOT)),"sha256":sha256_bytes(SOURCE.read_bytes()),"publisher":"Ministry of the Environment, Japan","published_date":"2025-12-23","retrieved_at":"2026-08-07T17:14:09Z","document_url":"https://www.env.go.jp/content/000365031.pdf","terms":{"name":"公共データ利用規約（第1.0版）","url":"https://www.env.go.jp/mail.html","attribution_required":True,"processing_disclosure_required":True}},
         "counts":{"prefectures":len(rows),"comparable":len(comparable)},
         "files":{name:{"bytes":len(data),"sha256":sha256_bytes(data)} for name,data in payloads.items()},
         "cache_control_hint":"max-age=3600, must-revalidate"}
