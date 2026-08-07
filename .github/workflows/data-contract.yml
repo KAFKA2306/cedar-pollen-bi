@@ -1,0 +1,39 @@
+name: Data contract and public API
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Compile data tooling
+        run: python -m py_compile scripts/validate_data_contract.py scripts/build_public_api.py tests/test_public_api.py
+      - name: Validate contract fixture
+        run: python scripts/validate_data_contract.py tests/fixtures/valid-records.json
+      - name: Validate record datasets when present
+        shell: bash
+        run: |
+          shopt -s nullglob globstar
+          files=(data/records/**/*.json public/data/**/*.json)
+          if ((${#files[@]})); then
+            python scripts/validate_data_contract.py "${files[@]}"
+          else
+            echo "No JSON observation-record dataset is currently tracked."
+          fi
+      - name: Build deterministic API distribution
+        run: python scripts/build_public_api.py
+      - name: Smoke test API distribution
+        run: python tests/test_public_api.py
+      - name: Verify committed API is reproducible
+        run: git diff --exit-code -- api/v1
