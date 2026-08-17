@@ -19,6 +19,8 @@ jobs:
           python-version: "3.12"
       - name: Compile data tooling
         run: python -m py_compile scripts/validate_data_contract.py scripts/build_public_api.py tests/test_public_api.py
+      - name: Check public BI JavaScript syntax
+        run: node --check pollen-bi.js
       - name: Validate contract fixture
         run: python scripts/validate_data_contract.py tests/fixtures/valid-records.json
       - name: Validate record datasets when present
