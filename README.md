@@ -1,5 +1,8 @@
 # Cedar Pollen BI
 
+[![Data contract and public API](https://github.com/KAFKA2306/cedar-pollen-bi/actions/workflows/data-contract.yml/badge.svg)](https://github.com/KAFKA2306/cedar-pollen-bi/actions/workflows/data-contract.yml)
+[![pages-build-deployment](https://github.com/KAFKA2306/cedar-pollen-bi/actions/workflows/pages/pages-build-deployment/badge.svg)](https://github.com/KAFKA2306/cedar-pollen-bi/actions/workflows/pages/pages-build-deployment)
+
 **「今年は花粉が多そう」という話と、実際に観測しているものは同じではない。**
 
 スギの雄花にできた花芽が多いことは、将来の花粉飛散に関係する要因の一つです。しかし、花芽量そのものは、空中を飛んだ花粉の実測値でも、最終的な飛散予測でも、個人の症状リスクでもありません。そこを一つの数字として読むと、観測と予測を混同します。
