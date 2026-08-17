@@ -13,7 +13,13 @@ const PREFECTURES = [
   ["福岡県", "九州・沖縄", 1, 12], ["佐賀県", "九州・沖縄", 0, 13], ["長崎県", "九州・沖縄", 0, 14],
   ["熊本県", "九州・沖縄", 1, 13], ["大分県", "九州・沖縄", 2, 13], ["宮崎県", "九州・沖縄", 2, 14],
   ["鹿児島県", "九州・沖縄", 1, 15], ["沖縄県", "九州・沖縄", 0, 17],
-].map(([pref, region, x, y]) => ({ pref, label: pref.replace(/[都道府県]$/, ""), region, x, y }));
+].map(([pref, region, x, y]) => ({
+  pref,
+  label: pref === "北海道" ? pref : pref.replace(/[都府県]$/, ""),
+  region,
+  x,
+  y,
+}));
 
 const REGION_ORDER = ["北海道", "東北", "関東", "中部", "近畿", "中国", "四国", "九州・沖縄"];
 const PREFECTURE_META = new Map(PREFECTURES.map((item) => [item.pref, item]));
