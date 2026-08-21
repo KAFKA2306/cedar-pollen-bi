@@ -87,7 +87,7 @@ def main() -> int:
         "source":{"path":str(SOURCE.relative_to(ROOT)),"sha256":sha256_bytes(SOURCE.read_bytes()),"publisher":"Ministry of the Environment, Japan","published_date":"2025-12-23","retrieved_at":"2026-08-07T17:14:09Z","document_url":"https://www.env.go.jp/content/000365031.pdf","terms":{"name":"公共データ利用規約（第1.0版）","url":"https://www.env.go.jp/mail.html","attribution_required":True,"processing_disclosure_required":True}},
         "counts":{"prefectures":len(rows),"comparable":len(comparable)},
         "files":{name:{"bytes":len(data),"sha256":sha256_bytes(data)} for name,data in payloads.items()},
-        "cache_control_hint":"max-age=3600, must-revalidate"}
+        "cache_control_hint":"max-age=3600, must-revalidate"
     }
     (OUT/"manifest.json").write_bytes(json_bytes(manifest))
     print(json.dumps({"prefectures":len(rows),"comparable":len(comparable),"output":str(OUT)},ensure_ascii=False))
