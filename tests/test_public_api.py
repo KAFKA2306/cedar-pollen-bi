@@ -9,13 +9,18 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 subprocess.run([sys.executable, str(ROOT / "scripts" / "build_public_api.py")], check=True)
 api = ROOT / "api" / "v1"
-with (api / "observations.csv").open(encoding="utf-8", newline="") as f:
-    rows = list(csv.DictReader(f))
+with (api / "observations.csv").open(encoding="utf-8", newline="") as file:
+    rows = list(csv.DictReader(file))
 latest = json.loads((api / "latest.json").read_text(encoding="utf-8"))
 manifest = json.loads((api / "manifest.json").read_text(encoding="utf-8"))
+
 assert len(rows) == 47
-assert len({r["prefecture_code"] for r in rows}) == 47
-assert next(r for r in rows if r["prefecture_code"] == "47")["official_comparison_percent"] == ""
+assert len({row["prefecture_code"] for row in rows}) == 47
+okinawa = next(row for row in rows if row["prefecture_code"] == "47")
+assert okinawa["observation_count_per_m2"] == "668"
+assert okinawa["baseline_average_count_per_m2"] == ""
+assert okinawa["official_comparison_percent"] == ""
+assert okinawa["baseline_note"] == "new observation; no historical baseline"
 assert manifest["counts"]["prefectures"] == 47
 assert manifest["counts"]["comparable"] == 46
 assert latest["max_official_comparison"] == {
@@ -35,11 +40,20 @@ for name, meta in manifest["files"].items():
 
 ui_script = (ROOT / "pollen-bi.js").read_text(encoding="utf-8")
 assert "/cedar-pollen-bi/api/v1/observations.csv" in ui_script
-assert "const observations = await loadObservations();" in ui_script
-for page in (ROOT / "index.html", ROOT / "bi" / "index.html"):
-    html = page.read_text(encoding="utf-8")
-    assert 'id="countLabel">46件<' in html
-    assert 'src="/cedar-pollen-bi/pollen-bi.js"' in html
-    assert "bi.astro_astro_type_script_index_0_lang.BBc-nVcZ.js" not in html
+assert "baselineNote" in ui_script
+assert "新規観測のため過去平均なし" in ui_script
+assert "環境省 資料1" in ui_script
 
-print("API and BI smoke test passed: 47 prefectures, 46 comparable records")
+root_html = (ROOT / "index.html").read_text(encoding="utf-8")
+assert 'id="countLabel">46件 + 比較不能1件<' in root_html
+assert "沖縄県は新規観測で過去平均がないため比率比較は行わず" in root_html
+assert "<th>根拠</th>" in root_html
+assert 'src="/cedar-pollen-bi/pollen-bi.js"' in root_html
+
+legacy_html = (ROOT / "bi" / "index.html").read_text(encoding="utf-8")
+assert 'rel="canonical" href="https://kafka2306.github.io/cedar-pollen-bi/"' in legacy_html
+assert 'content="0; url=/cedar-pollen-bi/"' in legacy_html
+assert 'src="/cedar-pollen-bi/pollen-bi.js"' not in legacy_html
+assert "bi.astro_astro_type_script_index_0_lang.BBc-nVcZ.js" not in root_html + legacy_html
+
+print("API and BI smoke test passed: 47 observations, 46 comparable, 1 explicit no-baseline record")
