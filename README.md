@@ -3,66 +3,51 @@
 [![Data contract and public API](https://github.com/KAFKA2306/cedar-pollen-bi/actions/workflows/data-contract.yml/badge.svg)](https://github.com/KAFKA2306/cedar-pollen-bi/actions/workflows/data-contract.yml)
 [![pages-build-deployment](https://github.com/KAFKA2306/cedar-pollen-bi/actions/workflows/pages/pages-build-deployment/badge.svg)](https://github.com/KAFKA2306/cedar-pollen-bi/actions/workflows/pages/pages-build-deployment)
 
-**「今年は花粉が多そう」という話と、実際に観測しているものは同じではない。**
+**スギ雄花の花芽量は、空中花粉飛散量の実測値でも、個人の症状予測でもありません。**
 
-スギの雄花にできた花芽が多いことは、将来の花粉飛散に関係する要因の一つです。しかし、花芽量そのものは、空中を飛んだ花粉の実測値でも、最終的な飛散予測でも、個人の症状リスクでもありません。そこを一つの数字として読むと、観測と予測を混同します。
+Cedar Pollen BI は、環境省「令和7年度スギ雄花花芽調査」の都道府県別観測値と、資料1に掲載された過去平均比を表示します。原則は過去10年平均ですが、観測歴が10年未満の地点は実際に観測した年数の平均が使われます。沖縄県は新規観測で過去平均がないため、観測値は保持し、比率比較は行いません。
 
-Cedar Pollen BIは、環境省が公開するスギ雄花花芽調査をもとに、都道府県別の花芽量を過去10年平均と比較して表示する公開データBIです。調査年、基準期間、単位、比率、BIを保持し、花芽量、飛散実測、飛散予測、症状リスクを別の情報として扱います。
+- **公開サイト:** https://kafka2306.github.io/cedar-pollen-bi/
+- **環境省発表:** https://www.env.go.jp/press/press_02181.html
+- **資料1（令和7年度観測値・比較値）:** https://www.env.go.jp/content/000365031.pdf
+- **資料2（過去の観測値）:** https://www.env.go.jp/content/000365032.pdf
 
-**公開サイト:** https://kafka2306.github.io/cedar-pollen-bi/
+## 読めるもの
 
-## できること
+- 47都道府県のスギ雄花花芽量
+- 資料1に過去平均がある46都道府県の比較比率
+- 各都道府県の基準年数に関する注記
+- 公式資料への根拠リンク
+- 比較できない場合の理由
 
-- 日本地図から都道府県別の値を確認
-- 過去10年平均に対する比率を比較
-- 都道府県間の差を一覧表示
-- 公式観測値と計算値を区別
-- 調査年、基準期間、単位、出典を追跡
-- 比較不能・欠損データを明示
+比率は、その地点の資料上の過去平均を100%とした比較です。したがって、すべての地点が同じ10年間を基準にしているわけではありません。
 
-## データの読み方
+## データと再現
 
-```text
-100%   = 過去10年平均と同程度
-150%   = 過去10年平均の1.5倍
-50%    = 過去10年平均の半分
-```
-
-比率が高いことは、花芽量が基準期間より多いことを示します。ただし、実際の花粉飛散量には気温、降水、風、飛散時期など別の条件も影響します。
-
-## データ処理の流れ
+正準入力は [`data/official/moe-cedar-bud-2025.csv`](data/official/moe-cedar-bud-2025.csv) です。出典・取得日時・利用条件は [`data/official/moe-source-metadata.json`](data/official/moe-source-metadata.json) に保持します。
 
 ```text
-環境省の公式調査資料
-  → 都道府県・調査年・単位を確認
-  → 都道府県別観測値を保存
-  → 過去10年平均との比較値を計算
-  → 表示区分を生成
-  → 地図・一覧として公開
+環境省 資料1
+  → data/official/moe-cedar-bud-2025.csv
+  → scripts/build_public_api.py で件数・重複・分母・比率を検証
+  → api/v1/ の公開データを再生成
+  → pollen-bi.js が公開データを読み込んで表示
 ```
 
-次を別の情報種別として扱います。
+再生成と検証は標準ライブラリだけで実行できます。
 
-- `OfficialObservation` — 公式資料に記載された観測値
-- `CalculatedValue` — 公式値から計算した比率
-- `DerivedClassification` — 色分けや表示区分
-- `Interpretation` — 値の意味に関する説明
-- `Forecast` — 将来の花粉飛散予測
+```bash
+python scripts/build_public_api.py
+python tests/test_public_api.py
+```
 
-公式出典、調査年、基準期間、単位、比較可能性が欠ける値は、推測で補完せず`UNKNOWN`または`mark_not_comparable`として扱います。
+GitHub Actions は同じ処理を実行し、再生成結果がcommit済み `api/v1/` と異なる場合に失敗します。
 
-機械可読な定義:
+## 解釈上の境界
 
-- [プロジェクト・オントロジー](ontology/project.yaml)
-- [共通因果・証拠オントロジー](https://github.com/KAFKA2306/know/blob/main/ontology/causal-evidence-core.yaml)
+- 花芽量と実際の空中花粉飛散量を同一視しません。
+- 花芽量から個人の症状や医療上のリスクを推定しません。
+- 基準期間・観測年数・単位が異なる値を同条件の測定として扱いません。
+- 公式資料に過去平均がない場合、比率を推測で補いません。
 
-## 主な構成
-
-リポジトリには、公開ダッシュボード、地図表示、正規化したデータ、出典・計算規則を保持します。実際のファイル構成と実行方法は、リポジトリ内のHTML、JavaScript、データファイル、GitHub Actionsを正として確認してください。
-
-## 注意
-
-- 本サイトは医療診断や個人の症状予測を行いません
-- 花芽量と実際の飛散量を同一視しないでください
-- 年度や基準期間が異なる値を無条件に比較しないでください
-- 最新の飛散予測や健康情報は、環境省、気象機関、医療機関などの公式情報を確認してください
+プロジェクト内の情報種別の定義は [`ontology/project.yaml`](ontology/project.yaml) を参照してください。
