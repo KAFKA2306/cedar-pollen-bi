@@ -16,6 +16,8 @@ REGIONS = {
 "36":"四国","37":"四国","38":"四国","39":"四国",
 "40":"九州・沖縄","41":"九州・沖縄","42":"九州・沖縄","43":"九州・沖縄","44":"九州・沖縄","45":"九州・沖縄","46":"九州・沖縄","47":"九州・沖縄",
 }
+UNIT = "個/m2"
+SOURCE_LOCATOR = "資料1 都道府県別表"
 
 def sha256_bytes(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
@@ -42,28 +44,69 @@ def load_rows() -> list[dict]:
             raise ValueError(f"invalid observation/baseline: {code}")
         if base is None and ratio is not None:
             raise ValueError(f"ratio without baseline: {code}")
+        if base is not None and ratio is None:
+            raise ValueError(f"baseline without ratio: {code}")
         if base is not None and abs(round(obs/base*100)-ratio) > 1:
             raise ValueError(f"official ratio mismatch: {code}")
-        result.append({**row,"region":REGIONS[code],"observation":obs,"baseline":base,"ratio":ratio})
+        comparison_status = "comparable" if ratio is not None else "not_comparable"
+        reason = None if ratio is not None else row["baseline_note"] or "historical baseline unavailable"
+        result.append({**row,"region":REGIONS[code],"observation":obs,"baseline":base,"ratio":ratio,"comparison_status":comparison_status,"not_comparable_reason":reason})
     return result
 
+def public_records(rows: list[dict], source_sha256: str) -> list[dict]:
+    records=[]
+    for r in rows:
+        source={
+            "publisher":r["publisher"],
+            "document_url":r["source_url"],
+            "published_date":r["published_date"],
+            "retrieved_at":r["retrieved_at"],
+            "locator":SOURCE_LOCATOR,
+            "sha256":source_sha256,
+        }
+        records.append({
+            "record_id":f"moe-cedar-bud-{r['survey_year']}-{r['prefecture_code']}-observation",
+            "prefecture_code":r["prefecture_code"],
+            "prefecture_name_ja":r["prefecture_name_ja"],
+            "survey_year":int(r["survey_year"]),
+            "metric_type":"official_flower_bud_observation",
+            "value":r["observation"],
+            "unit":UNIT,
+            "baseline":None if r["baseline"] is None else {
+                "start_year":2015 if "10-year" in r["baseline_note"] else int(r["survey_year"])-int(r["baseline_note"].split("-")[0]),
+                "end_year":2024,
+                "value":r["baseline"],
+                "unit":UNIT,
+            },
+            "comparison_status":r["comparison_status"],
+            "not_comparable_reason":r["not_comparable_reason"],
+            "source":source,
+            "transformation":None,
+        })
+    return records
+
 def main() -> int:
+    source_bytes=SOURCE.read_bytes()
+    source_sha256=sha256_bytes(source_bytes)
     rows=load_rows()
     OUT.mkdir(parents=True, exist_ok=True)
-    comparable=[r for r in rows if r["ratio"] is not None]
+    comparable=[r for r in rows if r["comparison_status"] == "comparable"]
+    records=public_records(rows, source_sha256)
     latest={
         "schema_version":"1.0.0","survey_year":2025,"prefecture_count":len(rows),"comparable_prefecture_count":len(comparable),
         "max_official_comparison":max(({"prefecture_code":r["prefecture_code"],"prefecture_name_ja":r["prefecture_name_ja"],"percent":r["ratio"]} for r in comparable),key=lambda x:x["percent"]),
         "min_official_comparison":min(({"prefecture_code":r["prefecture_code"],"prefecture_name_ja":r["prefecture_name_ja"],"percent":r["ratio"]} for r in comparable),key=lambda x:x["percent"]),
         "source_published_date":"2025-12-23","source_url":"https://www.env.go.jp/content/000365031.pdf"}
-    region_counts={}; baseline_types={}
+    region_counts={}; baseline_types={}; comparison_statuses={}
     for r in rows:
         region_counts[r["region"]]=region_counts.get(r["region"],0)+1
         note=r["baseline_note"] or "no baseline"
         baseline_types[note]=baseline_types.get(note,0)+1
-    facets={"schema_version":"1.0.0","regions":dict(sorted(region_counts.items())),"baseline_types":dict(sorted(baseline_types.items()))}
+        comparison_statuses[r["comparison_status"]]=comparison_statuses.get(r["comparison_status"],0)+1
+    facets={"schema_version":"1.0.0","regions":dict(sorted(region_counts.items())),"baseline_types":dict(sorted(baseline_types.items())),"comparison_statuses":dict(sorted(comparison_statuses.items()))}
     payloads={
-        "observations.csv":SOURCE.read_bytes(),
+        "observations.csv":source_bytes,
+        "records.json":json_bytes(records),
         "latest.json":json_bytes(latest),
         "facets.json":json_bytes(facets),
     }
@@ -71,12 +114,13 @@ def main() -> int:
         (OUT/name).write_bytes(data)
     manifest={
         "schema_version":"1.0.0","dataset":"moe_cedar_male_flower_bud_survey",
-        "source":{"path":str(SOURCE.relative_to(ROOT)),"sha256":sha256_bytes(SOURCE.read_bytes()),"publisher":"Ministry of the Environment, Japan","published_date":"2025-12-23","retrieved_at":"2026-08-07T17:14:09Z","document_url":"https://www.env.go.jp/content/000365031.pdf","terms":{"name":"公共データ利用規約（第1.0版）","url":"https://www.env.go.jp/mail.html","attribution_required":True,"processing_disclosure_required":True}},
-        "counts":{"prefectures":len(rows),"comparable":len(comparable)},
+        "record_schema":"/cedar-pollen-bi/schemas/cedar-pollen-record.schema.json",
+        "source":{"path":str(SOURCE.relative_to(ROOT)),"sha256":source_sha256,"publisher":"Ministry of the Environment, Japan","published_date":"2025-12-23","retrieved_at":"2026-08-07T17:14:09Z","document_url":"https://www.env.go.jp/content/000365031.pdf","terms":{"name":"公共データ利用規約（第1.0版）","url":"https://www.env.go.jp/mail.html","attribution_required":True,"processing_disclosure_required":True}},
+        "counts":{"prefectures":len(rows),"comparable":len(comparable),"not_comparable":len(rows)-len(comparable)},
         "files":{name:{"bytes":len(data),"sha256":sha256_bytes(data)} for name,data in payloads.items()},
         "cache_control_hint":"max-age=3600, must-revalidate"}
     (OUT/"manifest.json").write_bytes(json_bytes(manifest))
-    print(json.dumps({"prefectures":len(rows),"comparable":len(comparable),"output":str(OUT)},ensure_ascii=False))
+    print(json.dumps({"prefectures":len(rows),"comparable":len(comparable),"not_comparable":len(rows)-len(comparable),"output":str(OUT)},ensure_ascii=False))
     return 0
 
 if __name__=="__main__":
