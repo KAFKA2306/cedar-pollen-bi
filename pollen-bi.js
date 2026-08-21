@@ -61,19 +61,26 @@ function parseCsv(text) {
   return rows;
 }
 
+function numberOrNull(value) {
+  return value === "" ? null : Number(value);
+}
+
 async function loadObservations() {
   const response = await fetch("/cedar-pollen-bi/api/v1/observations.csv", { cache: "no-cache" });
   if (!response.ok) throw new Error(`Failed to load observations: HTTP ${response.status}`);
-  const rows = parseCsv(await response.text());
-  const header = rows.shift();
+  const csvRows = parseCsv(await response.text());
+  const header = csvRows.shift();
   const index = Object.fromEntries(header.map((name, i) => [name, i]));
-  return rows.filter((row) => row.length > 1).map((row) => {
+  return csvRows.filter((row) => row.length > 1).map((row) => {
     const pref = row[index.prefecture_name_ja];
-    const ratioText = row[index.official_comparison_percent];
     return {
       pref,
       region: PREFECTURE_META.get(pref)?.region ?? "",
-      ratio: ratioText === "" ? null : Number(ratioText),
+      observation: numberOrNull(row[index.observation_count_per_m2]),
+      baseline: numberOrNull(row[index.baseline_average_count_per_m2]),
+      ratio: numberOrNull(row[index.official_comparison_percent]),
+      baselineNote: row[index.baseline_note] ?? "",
+      sourceUrl: row[index.source_url] ?? "",
     };
   });
 }
@@ -101,12 +108,29 @@ function categoryLabel(value) {
   return value === "high" ? "200%以上" : value === "low" ? "50%以下" : "50%超から200%未満";
 }
 
+function comparisonReason(item) {
+  if (Number.isFinite(item?.ratio)) return "";
+  if (item?.baselineNote.includes("new observation") && item.baseline == null) {
+    return "新規観測のため過去平均なし";
+  }
+  if (item?.baseline == null) return "過去平均なし";
+  return "比較不能";
+}
+
+function matchesQuery(item, query) {
+  return !query || item.pref.includes(query) || item.region.includes(query);
+}
+
 function filteredRows() {
   const query = search.value.trim();
-  return comparable
-    .filter((item) => !query || item.pref.includes(query) || item.region.includes(query))
-    .filter((item) => band.value === "all" || category(item) === band.value)
+  return observations
+    .filter((item) => matchesQuery(item, query))
+    .filter((item) => band.value === "all" || Number.isFinite(item.ratio) && category(item) === band.value)
     .sort((a, b) => {
+      const aComparable = Number.isFinite(a.ratio);
+      const bComparable = Number.isFinite(b.ratio);
+      if (aComparable !== bComparable) return aComparable ? -1 : 1;
+      if (!aComparable) return a.pref.localeCompare(b.pref, "ja");
       if (sort.value === "asc") return a.ratio - b.ratio;
       if (sort.value === "region") return REGION_ORDER.indexOf(a.region) - REGION_ORDER.indexOf(b.region) || b.ratio - a.ratio;
       return b.ratio - a.ratio;
@@ -115,11 +139,12 @@ function filteredRows() {
 
 function showTooltip(item, x, y) {
   if (!item || item.ratio == null) {
-    tooltip.innerHTML = `<strong>${item?.pref ?? ""}</strong><span>比較値なし</span>`;
+    const observationText = Number.isFinite(item?.observation) ? `${item.observation}個/m²` : "観測値なし";
+    tooltip.innerHTML = `<strong>${item?.pref ?? ""}</strong><span>${observationText} / ${comparisonReason(item)}</span>`;
   } else {
-    tooltip.innerHTML = `<strong>${item.pref}</strong><span>${item.ratio}% / ${categoryLabel(category(item))}</span>`;
+    tooltip.innerHTML = `<strong>${item.pref}</strong><span>${item.ratio}% / ${categoryLabel(category(item))}</span><span>観測 ${item.observation}個/m² / 基準 ${item.baseline}個/m²</span>`;
   }
-  tooltip.style.left = `${Math.min(x + 14, window.innerWidth - 190)}px`;
+  tooltip.style.left = `${Math.min(x + 14, window.innerWidth - 250)}px`;
   tooltip.style.top = `${Math.max(y - 22, 12)}px`;
   tooltip.style.display = "block";
 }
@@ -135,7 +160,7 @@ function selectPrefecture(prefecture) {
 
 function renderBars(items) {
   barChart.innerHTML = "";
-  for (const item of items) {
+  for (const item of items.filter((row) => Number.isFinite(row.ratio))) {
     const button = document.createElement("button");
     button.type = "button";
     button.className = `bar-row ${selected === item.pref ? "active" : ""}`;
@@ -157,28 +182,32 @@ function renderTable(items) {
   for (const item of items) {
     const tr = document.createElement("tr");
     if (selected === item.pref) tr.style.background = "rgb(23 107 77 / 0.08)";
-    const itemCategory = category(item);
-    tr.innerHTML = `<td>${item.pref}</td><td>${item.region}</td><td>${item.ratio}%</td><td>${item.ratio - 100 > 0 ? "+" : ""}${item.ratio - 100}pt</td><td><span class="badge ${itemCategory}">${categoryLabel(itemCategory)}</span></td>`;
-    tr.addEventListener("click", () => selectPrefecture(item.pref));
+    if (Number.isFinite(item.ratio)) {
+      const itemCategory = category(item);
+      tr.innerHTML = `<td>${item.pref}</td><td>${item.region}</td><td>${item.ratio}%</td><td>${item.ratio - 100 > 0 ? "+" : ""}${item.ratio - 100}pt</td><td><span class="badge ${itemCategory}">${categoryLabel(itemCategory)}</span></td><td><a href="${item.sourceUrl}">環境省 資料1</a></td>`;
+      tr.addEventListener("click", () => selectPrefecture(item.pref));
+    } else {
+      tr.innerHTML = `<td>${item.pref}</td><td>${item.region}</td><td>—</td><td>—</td><td>${comparisonReason(item)}</td><td><a href="${item.sourceUrl}">環境省 資料1</a></td>`;
+    }
     rows.append(tr);
   }
 }
 
 function renderMap(items) {
-  const visible = new Set(items.map((item) => item.pref));
+  const visible = new Set(items.filter((item) => Number.isFinite(item.ratio)).map((item) => item.pref));
   const tile = 34;
   const gap = 6;
   const origin = { x: 38, y: 18 };
   japanMap.innerHTML = "";
   for (const meta of PREFECTURES) {
     const observation = observationByPrefecture.get(meta.pref);
-    const hasRatio = observation?.ratio != null;
+    const hasRatio = Number.isFinite(observation?.ratio);
     const isVisible = hasRatio && visible.has(meta.pref);
     const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
     group.setAttribute("class", ["pref-tile", hasRatio ? "has-data" : "no-data", hasRatio ? category(observation) : "", hasRatio && !isVisible ? "hidden" : "", selected === meta.pref ? "selected" : ""].filter(Boolean).join(" "));
     group.setAttribute("transform", `translate(${origin.x + meta.x * (tile + gap)}, ${origin.y + meta.y * (tile + gap)})`);
-    group.setAttribute("aria-label", hasRatio ? `${meta.pref} ${observation.ratio}%` : `${meta.pref} 比較値なし`);
-    if (hasRatio) group.setAttribute("tabindex", "0");
+    group.setAttribute("aria-label", hasRatio ? `${meta.pref} ${observation.ratio}%` : `${meta.pref} ${comparisonReason(observation)}`);
+    group.setAttribute("tabindex", "0");
     const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
     rect.setAttribute("width", tile);
     rect.setAttribute("height", tile);
@@ -194,10 +223,14 @@ function renderMap(items) {
     group.addEventListener("pointerleave", hideTooltip);
     if (hasRatio) {
       group.addEventListener("click", () => selectPrefecture(meta.pref));
-      group.addEventListener("keydown", (event) => {
-        if (event.key === "Enter" || event.key === " ") selectPrefecture(meta.pref);
-      });
     }
+    group.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        showTooltip(observation ?? { pref: meta.pref, ratio: null }, window.innerWidth / 2, 80);
+        if (hasRatio) selectPrefecture(meta.pref);
+      }
+    });
     japanMap.append(group);
   }
 }
@@ -212,7 +245,9 @@ function renderMetrics() {
 
 function render() {
   const items = filteredRows();
-  countLabel.textContent = `${items.length}件`;
+  const comparableCount = items.filter((item) => Number.isFinite(item.ratio)).length;
+  const notComparableCount = items.length - comparableCount;
+  countLabel.textContent = notComparableCount ? `${comparableCount}件 + 比較不能${notComparableCount}件` : `${comparableCount}件`;
   renderBars(items);
   renderTable(items);
   renderMap(items);
