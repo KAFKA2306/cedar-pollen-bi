@@ -24,7 +24,7 @@ Cedar Pollen BI は、環境省「令和7年度スギ雄花花芽調査」の都
 
 ## データと再現
 
-正準入力は [`data/official/moe-cedar-bud-2025.csv`](data/official/moe-cedar-bud-2025.csv) です。出典・取得日時・利用条件は [`data/official/moe-source-metadata.json`](data/official/moe-source-metadata.json) に保持します。
+正準入力は [`data/official/moe-cedar-bud-2025.csv`](data/official/moe-cedar-bud-2025.csv) です。出典・取得日時・利用条件は [`data/official/moe-source-metadata.json`](data/official/moe-source-metadata.json) に保持します。公開APIでは観測表を [`api/v1/observations.csv`](api/v1/observations.csv)、比較可否と理由を [`api/v1/comparability.json`](api/v1/comparability.json) として分離し、どちらも同じ正準入力から再生成します。
 
 ```text
 環境省 資料1

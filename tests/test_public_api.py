@@ -11,6 +11,7 @@ subprocess.run([sys.executable, str(ROOT / "scripts" / "build_public_api.py")], 
 api = ROOT / "api" / "v1"
 with (api / "observations.csv").open(encoding="utf-8", newline="") as file:
     rows = list(csv.DictReader(file))
+comparability = json.loads((api / "comparability.json").read_text(encoding="utf-8"))
 latest = json.loads((api / "latest.json").read_text(encoding="utf-8"))
 manifest = json.loads((api / "manifest.json").read_text(encoding="utf-8"))
 
@@ -21,8 +22,25 @@ assert okinawa["observation_count_per_m2"] == "668"
 assert okinawa["baseline_average_count_per_m2"] == ""
 assert okinawa["official_comparison_percent"] == ""
 assert okinawa["baseline_note"] == "new observation; no historical baseline"
+
+comparison_records = comparability["records"]
+assert len(comparison_records) == 47
+assert sum(row["comparison_status"] == "comparable" for row in comparison_records) == 46
+okinawa_status = next(row for row in comparison_records if row["prefecture_code"] == "47")
+assert okinawa_status == {
+    "comparison_status": "not_comparable",
+    "not_comparable_reason": "new observation; no historical baseline",
+    "prefecture_code": "47",
+}
+assert all(
+    row["not_comparable_reason"] is None
+    for row in comparison_records
+    if row["comparison_status"] == "comparable"
+)
+
 assert manifest["counts"]["prefectures"] == 47
 assert manifest["counts"]["comparable"] == 46
+assert "comparability.json" in manifest["files"]
 assert latest["max_official_comparison"] == {
     "percent": 328,
     "prefecture_code": "01",

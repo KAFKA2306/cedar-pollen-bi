@@ -42,15 +42,19 @@ def load_rows() -> list[dict]:
             raise ValueError(f"invalid observation/baseline: {code}")
         if base is None and ratio is not None:
             raise ValueError(f"ratio without baseline: {code}")
+        if base is not None and ratio is None:
+            raise ValueError(f"baseline without ratio: {code}")
         if base is not None and abs(round(obs/base*100)-ratio) > 1:
             raise ValueError(f"official ratio mismatch: {code}")
-        result.append({**row,"region":REGIONS[code],"observation":obs,"baseline":base,"ratio":ratio})
+        comparison_status = "comparable" if ratio is not None else "not_comparable"
+        reason = None if ratio is not None else row["baseline_note"] or "historical baseline unavailable"
+        result.append({**row,"region":REGIONS[code],"observation":obs,"baseline":base,"ratio":ratio,"comparison_status":comparison_status,"not_comparable_reason":reason})
     return result
 
 def main() -> int:
     rows=load_rows()
     OUT.mkdir(parents=True, exist_ok=True)
-    comparable=[r for r in rows if r["ratio"] is not None]
+    comparable=[r for r in rows if r["comparison_status"] == "comparable"]
     latest={
         "schema_version":"1.0.0","survey_year":2025,"prefecture_count":len(rows),"comparable_prefecture_count":len(comparable),
         "max_official_comparison":max(({"prefecture_code":r["prefecture_code"],"prefecture_name_ja":r["prefecture_name_ja"],"percent":r["ratio"]} for r in comparable),key=lambda x:x["percent"]),
@@ -62,8 +66,17 @@ def main() -> int:
         note=r["baseline_note"] or "no baseline"
         baseline_types[note]=baseline_types.get(note,0)+1
     facets={"schema_version":"1.0.0","regions":dict(sorted(region_counts.items())),"baseline_types":dict(sorted(baseline_types.items()))}
+    comparability={
+        "schema_version":"1.0.0",
+        "records":[{
+            "prefecture_code":r["prefecture_code"],
+            "comparison_status":r["comparison_status"],
+            "not_comparable_reason":r["not_comparable_reason"],
+        } for r in rows],
+    }
     payloads={
         "observations.csv":SOURCE.read_bytes(),
+        "comparability.json":json_bytes(comparability),
         "latest.json":json_bytes(latest),
         "facets.json":json_bytes(facets),
     }
@@ -74,7 +87,8 @@ def main() -> int:
         "source":{"path":str(SOURCE.relative_to(ROOT)),"sha256":sha256_bytes(SOURCE.read_bytes()),"publisher":"Ministry of the Environment, Japan","published_date":"2025-12-23","retrieved_at":"2026-08-07T17:14:09Z","document_url":"https://www.env.go.jp/content/000365031.pdf","terms":{"name":"公共データ利用規約（第1.0版）","url":"https://www.env.go.jp/mail.html","attribution_required":True,"processing_disclosure_required":True}},
         "counts":{"prefectures":len(rows),"comparable":len(comparable)},
         "files":{name:{"bytes":len(data),"sha256":sha256_bytes(data)} for name,data in payloads.items()},
-        "cache_control_hint":"max-age=3600, must-revalidate"}
+        "cache_control_hint":"max-age=3600, must-revalidate"
+    }
     (OUT/"manifest.json").write_bytes(json_bytes(manifest))
     print(json.dumps({"prefectures":len(rows),"comparable":len(comparable),"output":str(OUT)},ensure_ascii=False))
     return 0
