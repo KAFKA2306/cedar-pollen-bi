@@ -12,6 +12,7 @@ api = ROOT / "api" / "v1"
 with (api / "observations.csv").open(encoding="utf-8", newline="") as file:
     rows = list(csv.DictReader(file))
 comparability = json.loads((api / "comparability.json").read_text(encoding="utf-8"))
+editorial_pack = json.loads((api / "editorial-pack.json").read_text(encoding="utf-8"))
 latest = json.loads((api / "latest.json").read_text(encoding="utf-8"))
 manifest = json.loads((api / "manifest.json").read_text(encoding="utf-8"))
 
@@ -46,9 +47,27 @@ assert all(
     if row["comparison_status"] == "comparable"
 )
 
+assert editorial_pack["dataset"] == "moe_cedar_male_flower_bud_survey"
+assert editorial_pack["survey_year"] == 2025
+assert editorial_pack["unit"] == "個/m²"
+assert len(editorial_pack["records"]) == 47
+assert sum(row["comparison_status"] == "comparable" for row in editorial_pack["records"]) == 46
+assert any("空中花粉飛散量そのものではない" in note for note in editorial_pack["usage_notes"])
+assert any("個人の症状" in note for note in editorial_pack["usage_notes"])
+osaka_pack = next(row for row in editorial_pack["records"] if row["prefecture_code"] == "27")
+assert osaka_pack["prefecture_name_ja"] == "大阪府"
+assert osaka_pack["source_url"] == "https://www.env.go.jp/content/000365031.pdf"
+assert osaka_pack["source_page"] == 1
+assert osaka_pack["source_section"] == "資料1"
+okinawa_pack = next(row for row in editorial_pack["records"] if row["prefecture_code"] == "47")
+assert okinawa_pack["baseline_average_count_per_m2"] is None
+assert okinawa_pack["official_comparison_percent"] is None
+assert okinawa_pack["comparison_status"] == "not_comparable"
+
 assert manifest["counts"]["prefectures"] == 47
 assert manifest["counts"]["comparable"] == 46
 assert "comparability.json" in manifest["files"]
+assert "editorial-pack.json" in manifest["files"]
 assert latest["max_official_comparison"] == {
     "percent": 328,
     "prefecture_code": "01",
@@ -83,4 +102,4 @@ assert 'content="0; url=/cedar-pollen-bi/"' in legacy_html
 assert 'src="/cedar-pollen-bi/pollen-bi.js"' not in legacy_html
 assert "bi.astro_astro_type_script_index_0_lang.BBc-nVcZ.js" not in root_html + legacy_html
 
-print("API and BI smoke test passed: 47 observations with source location, 46 comparable, 1 explicit no-baseline record")
+print("API and BI smoke test passed: 47 observations with source location, editorial reuse pack, 46 comparable, 1 explicit no-baseline record")
