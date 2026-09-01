@@ -1,3 +1,5 @@
+https://kafka2306.github.io/cedar-pollen-bi/
+
 # Cedar Pollen BI
 
 [![Data contract and public API](https://github.com/KAFKA2306/cedar-pollen-bi/actions/workflows/data-contract.yml/badge.svg)](https://github.com/KAFKA2306/cedar-pollen-bi/actions/workflows/data-contract.yml)
@@ -7,7 +9,6 @@
 
 Cedar Pollen BI は、環境省「令和7年度スギ雄花花芽調査」の都道府県別観測値と、資料1に掲載された過去平均比を表示します。原則は過去10年平均ですが、観測歴が10年未満の地点は実際に観測した年数の平均が使われます。沖縄県は新規観測で過去平均がないため、観測値は保持し、比率比較は行いません。
 
-- **公開サイト:** https://kafka2306.github.io/cedar-pollen-bi/
 - **環境省発表:** https://www.env.go.jp/press/press_02181.html
 - **資料1（令和7年度観測値・比較値）:** https://www.env.go.jp/content/000365031.pdf
 - **資料2（過去の観測値）:** https://www.env.go.jp/content/000365032.pdf
