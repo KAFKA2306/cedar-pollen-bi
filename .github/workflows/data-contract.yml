@@ -33,9 +33,9 @@ jobs:
           else
             echo "No JSON observation-record dataset is currently tracked."
           fi
-      - name: Build deterministic API distribution
+      - name: Build deterministic public distribution
         run: python scripts/build_public_api.py
-      - name: Smoke test API distribution
+      - name: Smoke test public distribution
         run: python tests/test_public_api.py
-      - name: Verify committed API is reproducible
-        run: git diff --exit-code -- api/v1
+      - name: Verify committed public distribution is reproducible
+        run: git diff --exit-code -- api/v1 samples/osaka

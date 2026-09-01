@@ -83,6 +83,27 @@ for name, meta in manifest["files"].items():
     assert len(data) == meta["bytes"]
     assert hashlib.sha256(data).hexdigest() == meta["sha256"]
 
+osaka_sample = ROOT / "samples" / "osaka"
+osaka_data = json.loads((osaka_sample / "data.json").read_text(encoding="utf-8"))
+assert osaka_data["prefecture_code"] == osaka_pack["prefecture_code"]
+assert osaka_data["prefecture_name_ja"] == osaka_pack["prefecture_name_ja"]
+assert osaka_data["observation_count_per_m2"] == osaka_pack["observation_count_per_m2"]
+assert osaka_data["baseline_average_count_per_m2"] == osaka_pack["baseline_average_count_per_m2"]
+assert osaka_data["official_comparison_percent"] == osaka_pack["official_comparison_percent"]
+assert osaka_data["comparison_status"] == osaka_pack["comparison_status"]
+assert osaka_data["source_url"] == osaka_pack["source_url"]
+assert osaka_data["source_page"] == osaka_pack["source_page"]
+assert osaka_data["source_section"] == osaka_pack["source_section"]
+osaka_html = (osaka_sample / "index.html").read_text(encoding="utf-8")
+osaka_svg = (osaka_sample / "chart.svg").read_text(encoding="utf-8")
+for expected in ("16,925 個/m²", "5,368 個/m²", "315%", "資料1、1ページ"):
+    assert expected in osaka_html
+    assert expected.replace("、1ページ", "、1ページ") in osaka_svg or expected == "資料1、1ページ"
+assert "https://www.env.go.jp/content/000365031.pdf" in osaka_html
+assert "https://www.env.go.jp/content/000365031.pdf" in osaka_svg
+assert "空中花粉飛散量そのもの" in osaka_html
+assert "空中花粉飛散量そのもの" in osaka_svg
+
 ui_script = (ROOT / "pollen-bi.js").read_text(encoding="utf-8")
 assert "/cedar-pollen-bi/api/v1/observations.csv" in ui_script
 assert "baselineNote" in ui_script
@@ -102,4 +123,4 @@ assert 'content="0; url=/cedar-pollen-bi/"' in legacy_html
 assert 'src="/cedar-pollen-bi/pollen-bi.js"' not in legacy_html
 assert "bi.astro_astro_type_script_index_0_lang.BBc-nVcZ.js" not in root_html + legacy_html
 
-print("API and BI smoke test passed: 47 observations with source location, editorial reuse pack, 46 comparable, 1 explicit no-baseline record")
+print("API, BI, and Osaka sample smoke test passed: one canonical dataset regenerates the public API and three sample formats")
