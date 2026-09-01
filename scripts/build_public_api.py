@@ -51,6 +51,38 @@ def load_rows() -> list[dict]:
         result.append({**row,"region":REGIONS[code],"observation":obs,"baseline":base,"ratio":ratio,"comparison_status":comparison_status,"not_comparable_reason":reason})
     return result
 
+def build_editorial_pack(rows: list[dict]) -> dict:
+    records=[]
+    for row in rows:
+        records.append({
+            "prefecture_code":row["prefecture_code"],
+            "prefecture_name_ja":row["prefecture_name_ja"],
+            "region":row["region"],
+            "survey_year":2025,
+            "observation_count_per_m2":row["observation"],
+            "baseline_average_count_per_m2":row["baseline"],
+            "official_comparison_percent":row["ratio"],
+            "comparison_status":row["comparison_status"],
+            "not_comparable_reason":row["not_comparable_reason"],
+            "source_url":row["source_url"],
+            "source_page":int(row["source_page"]),
+            "source_section":row["source_section"],
+        })
+    return {
+        "schema_version":"1.0.0",
+        "dataset":"moe_cedar_male_flower_bud_survey",
+        "purpose":"地域記事・広報資料で、環境省のスギ雄花花芽調査を出典付きで再利用するためのデータパック",
+        "survey_year":2025,
+        "unit":"個/m²",
+        "records":records,
+        "usage_notes":[
+            "スギ雄花の花芽量であり、空中花粉飛散量そのものではない。",
+            "個人の症状、医療上の危険度、安全性を示す値ではない。",
+            "comparison_status が not_comparable の地域を比率ランキングへ含めない。",
+            "各値を掲載する場合は source_url、source_page、source_section から環境省一次資料へ遡れる。",
+        ],
+    }
+
 def main() -> int:
     rows=load_rows()
     OUT.mkdir(parents=True, exist_ok=True)
@@ -77,6 +109,7 @@ def main() -> int:
     payloads={
         "observations.csv":SOURCE.read_bytes(),
         "comparability.json":json_bytes(comparability),
+        "editorial-pack.json":json_bytes(build_editorial_pack(rows)),
         "latest.json":json_bytes(latest),
         "facets.json":json_bytes(facets),
     }
