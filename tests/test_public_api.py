@@ -17,6 +17,14 @@ manifest = json.loads((api / "manifest.json").read_text(encoding="utf-8"))
 
 assert len(rows) == 47
 assert len({row["prefecture_code"] for row in rows}) == 47
+assert all(row["source_url"] == "https://www.env.go.jp/content/000365031.pdf" for row in rows)
+assert all(row["source_page"] == "1" for row in rows)
+assert all(row["source_section"] == "資料1" for row in rows)
+for prefecture_code in ("01", "27", "47"):
+    evidence = next(row for row in rows if row["prefecture_code"] == prefecture_code)
+    assert evidence["source_page"] == "1"
+    assert evidence["source_section"] == "資料1"
+
 okinawa = next(row for row in rows if row["prefecture_code"] == "47")
 assert okinawa["observation_count_per_m2"] == "668"
 assert okinawa["baseline_average_count_per_m2"] == ""
@@ -61,6 +69,7 @@ assert "/cedar-pollen-bi/api/v1/observations.csv" in ui_script
 assert "baselineNote" in ui_script
 assert "新規観測のため過去平均なし" in ui_script
 assert "環境省 資料1" in ui_script
+assert "sourceUrl" in ui_script
 
 root_html = (ROOT / "index.html").read_text(encoding="utf-8")
 assert 'id="countLabel">46件 + 比較不能1件<' in root_html
@@ -74,4 +83,4 @@ assert 'content="0; url=/cedar-pollen-bi/"' in legacy_html
 assert 'src="/cedar-pollen-bi/pollen-bi.js"' not in legacy_html
 assert "bi.astro_astro_type_script_index_0_lang.BBc-nVcZ.js" not in root_html + legacy_html
 
-print("API and BI smoke test passed: 47 observations, 46 comparable, 1 explicit no-baseline record")
+print("API and BI smoke test passed: 47 observations with source location, 46 comparable, 1 explicit no-baseline record")
