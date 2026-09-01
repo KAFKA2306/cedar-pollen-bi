@@ -1,0 +1,14 @@
+{
+  "prefecture_code": "27",
+  "prefecture_name_ja": "大阪府",
+  "survey_year": 2025,
+  "unit": "個/m²",
+  "observation_count_per_m2": 16925,
+  "baseline_average_count_per_m2": 5368,
+  "official_comparison_percent": 315,
+  "comparison_status": "comparable",
+  "source_url": "https://www.env.go.jp/content/000365031.pdf",
+  "source_page": 1,
+  "source_section": "資料1",
+  "note": "スギ雄花の花芽量であり、空中花粉飛散量そのものや個人の症状を予測する値ではありません。"
+}
