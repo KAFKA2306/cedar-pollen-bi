@@ -40,4 +40,4 @@ jobs:
       - name: Smoke test public distribution
         run: python tests/test_public_api.py
       - name: Verify committed artifacts are reproducible
-        run: git diff --exit-code -- api/v1 samples/osaka analysis/2024-bud-2025-sugi-pollen.json
+        run: git diff --exit-code -- api/v1 samples/osaka analysis/2024-bud-2025-sugi-pollen.json analysis/2025-bud-2026-sugi-pollen.json
