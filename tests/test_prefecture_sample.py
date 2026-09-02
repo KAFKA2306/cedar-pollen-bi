@@ -35,7 +35,9 @@ assert okinawa["comparison_status"] == "not_comparable"
 assert okinawa["baseline_average_count_per_m2"] is None
 assert okinawa["official_comparison_percent"] is None
 assert okinawa["not_comparable_reason"] == "new observation; no historical baseline"
-assert "過去平均なし" in okinawa_files["index.html"].decode("utf-8")
+okinawa_html = okinawa_files["index.html"].decode("utf-8")
+assert "<dt>過去平均</dt><dd>なし</dd>" in okinawa_html
+assert "比較不能" in okinawa_html
 assert "比率比較は行いません" in okinawa_files["chart.svg"].decode("utf-8")
 
 print("Prefecture sample generation passed for comparable and not-comparable canonical data")
