@@ -1,0 +1,30 @@
+{
+  "question": "2024年11～12月のスギ雄花花芽量は、同じ都道府県で2025年春に観測されたスギ花粉総飛散数と横断的に対応するか",
+  "input": {
+    "bud_survey": {
+      "year": 2024,
+      "records": 46,
+      "unit": "個/m²",
+      "source_url": "https://www.env.go.jp/content/000278567.pdf"
+    },
+    "sugi_pollen": {
+      "season_year": 2025,
+      "records": 26,
+      "unit": "個/cm²",
+      "source_url": "https://www.env.go.jp/content/000365034.pdf",
+      "site_identity_source_url": "https://www.env.go.jp/content/000378661.pdf"
+    },
+    "paired_records": 26
+  },
+  "metrics": {
+    "pearson_raw": -0.07043,
+    "spearman_rank": 0.074872,
+    "pearson_log1p": 0.269677
+  },
+  "interpretation": [
+    "26組の都道府県対応では、花芽量の絶対値と翌春のスギ花粉実測値に強い単純な横断相関は確認できない。",
+    "この結果は花芽量に予測価値がないことを意味しない。花芽調査は都道府県内のスギ林、花粉実測は各都道府県の特定観測地点であり、空間単位が一致しない。",
+    "気象、飛散源から観測地点までの輸送、観測地点特性などを調整していないため、因果効果や予測精度として解釈しない。",
+    "令和7年度（2025年11～12月）の花芽量と令和7年春（2025年）の飛散数は時間順序が逆なので結び付けない。"
+  ]
+}
