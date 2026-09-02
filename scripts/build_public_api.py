@@ -103,7 +103,6 @@ def build_prefecture_sample(row: dict) -> dict[str, bytes]:
         "baseline_average_count_per_m2":base,
         "official_comparison_percent":ratio,
         "comparison_status":row["comparison_status"],
-        "not_comparable_reason":row["not_comparable_reason"],
         "source_url":source,
         "source_page":page,
         "source_section":section,
@@ -115,9 +114,11 @@ def build_prefecture_sample(row: dict) -> dict[str, bytes]:
         comparison_desc=f"花芽量{obs}個毎平方メートル、過去平均{base}個毎平方メートル、公式比較率{ratio}パーセント。"
         baseline_width=round(508 * base / max(obs, base))
         observation_width=round(508 * obs / max(obs, base))
-        comparison_svg=f'''<text x="48" y="215" font-family="sans-serif" font-size="16">過去平均</text><rect x="180" y="195" width="{baseline_width}" height="28" fill="#999"/><text x="700" y="216" font-family="sans-serif" font-size="16">{base:,}</text>'''
+        baseline_label_x=180 + baseline_width + 12
+        comparison_svg=f'''<text x="48" y="215" font-family="sans-serif" font-size="16">過去平均</text><rect x="180" y="195" width="{baseline_width}" height="28" fill="#999"/><text x="{baseline_label_x}" y="216" font-family="sans-serif" font-size="16">{base:,}</text>'''
     else:
         reason=row["not_comparable_reason"] or "過去平均なし"
+        data["not_comparable_reason"]=reason
         comparison_html=f"<dt>過去平均</dt><dd>なし</dd>\n<dt>公式比較率</dt><dd>なし</dd>\n<dt>比較可否</dt><dd>比較不能（{reason}）</dd>"
         comparison_summary=f"花芽量 {obs:,} 個/m² / 過去平均なし / 比較不能"
         comparison_desc=f"花芽量{obs}個毎平方メートル。過去平均がないため比較不能。"
