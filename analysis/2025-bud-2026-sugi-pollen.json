@@ -9,10 +9,10 @@
     },
     "sugi_pollen": {
       "season_year": 2026,
-      "as_of": "2026-06-19",
       "records": 27,
       "unit": "個/cm²",
-      "source_url": "https://www.env.go.jp/content/000374236.pdf"
+      "source_url": "https://www.env.go.jp/content/000374236.pdf",
+      "as_of": "2026-06-19"
     },
     "paired_records": 27
   },
