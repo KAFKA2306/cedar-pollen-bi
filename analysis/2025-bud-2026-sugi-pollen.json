@@ -1,0 +1,38 @@
+{
+  "question": "2025年11～12月のスギ雄花花芽量は、同じ都道府県で2026年春に観測されたスギ花粉総飛散数と横断的に対応するか",
+  "input": {
+    "bud_survey": {
+      "year": 2025,
+      "records": 47,
+      "unit": "個/m²",
+      "source_url": "https://www.env.go.jp/content/000365031.pdf"
+    },
+    "sugi_pollen": {
+      "season_year": 2026,
+      "as_of": "2026-06-19",
+      "records": 27,
+      "unit": "個/cm²",
+      "source_url": "https://www.env.go.jp/content/000374236.pdf"
+    },
+    "paired_records": 27
+  },
+  "metrics": {
+    "pearson_raw": -0.215298,
+    "spearman_rank": -0.064713,
+    "pearson_log1p": 0.000388
+  },
+  "interpretation": [
+    "27組の都道府県対応では、花芽量の絶対値と翌春のスギ花粉実測値に強い単純な横断相関は確認できない。",
+    "前年の2024年花芽量と2025年スギ花粉実測値を比較した既存分析でも単純な横断相関は弱く、2年続けて都道府県単位の単純対応を予測精度として扱う根拠は得られなかった。",
+    "この結果は花芽量に予測価値がないことを意味しない。花芽調査は都道府県内のスギ林、花粉実測は各都道府県の特定観測地点であり、空間単位が一致しない。",
+    "気象、飛散源から観測地点までの輸送、観測地点特性などを調整していないため、因果効果や個別地域の予測精度として解釈しない。",
+    "Cedar Pollen BIでは花芽量を空中花粉飛散量や個人症状の予測として表示しない現在の境界を維持する。"
+  ],
+  "comparison_to_prior_analysis": {
+    "artifact": "analysis/2024-bud-2025-sugi-pollen.json",
+    "prior_paired_records": 26,
+    "prior_pearson_raw": -0.07043,
+    "prior_spearman_rank": 0.074872,
+    "prior_pearson_log1p": 0.269677
+  }
+}
