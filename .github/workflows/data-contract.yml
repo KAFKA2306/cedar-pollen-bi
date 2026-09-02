@@ -18,7 +18,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Compile data tooling
-        run: python -m py_compile scripts/validate_data_contract.py scripts/build_public_api.py tests/test_public_api.py
+        run: python -m py_compile scripts/validate_data_contract.py scripts/build_public_api.py scripts/analyze_bud_to_sugi_pollen.py tests/test_public_api.py tests/test_bud_to_sugi_pollen.py
       - name: Check public BI JavaScript syntax
         run: node --check pollen-bi.js
       - name: Validate contract fixture
@@ -35,7 +35,9 @@ jobs:
           fi
       - name: Build deterministic public distribution
         run: python scripts/build_public_api.py
+      - name: Reproduce bud-to-pollen research result
+        run: python tests/test_bud_to_sugi_pollen.py
       - name: Smoke test public distribution
         run: python tests/test_public_api.py
-      - name: Verify committed public distribution is reproducible
-        run: git diff --exit-code -- api/v1 samples/osaka
+      - name: Verify committed artifacts are reproducible
+        run: git diff --exit-code -- api/v1 samples/osaka analysis/2024-bud-2025-sugi-pollen.json
