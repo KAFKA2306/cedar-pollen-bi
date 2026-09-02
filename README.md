@@ -13,6 +13,16 @@ Cedar Pollen BI は、環境省「令和7年度スギ雄花花芽調査」の都
 - **資料1（令和7年度観測値・比較値）:** https://www.env.go.jp/content/000365031.pdf
 - **資料2（過去の観測値）:** https://www.env.go.jp/content/000365032.pdf
 
+## 公開サンプル
+
+大阪府のデータを、同じ正準入力からHTML・JSON・SVGの3形式で公開します。
+
+- HTML: https://kafka2306.github.io/cedar-pollen-bi/samples/osaka/
+- JSON: https://kafka2306.github.io/cedar-pollen-bi/samples/osaka/data.json
+- SVG: https://kafka2306.github.io/cedar-pollen-bi/samples/osaka/chart.svg
+
+数値・単位・比較率・出典は `data/official/moe-cedar-bud-2025.csv` から再生成し、CIで一致を検証します。
+
 ## 読めるもの
 
 - 47都道府県のスギ雄花花芽量
