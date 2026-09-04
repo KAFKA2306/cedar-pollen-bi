@@ -15,13 +15,17 @@ Cedar Pollen BI は、環境省「令和7年度スギ雄花花芽調査」の都
 
 ## 公開サンプル
 
-大阪府のデータを、同じ正準入力からHTML・JSON・SVGの3形式で公開します。
+47都道府県を選択し、同じ正準データから画面表示・JSON保存・SVG保存に再利用できます。
+
+https://kafka2306.github.io/cedar-pollen-bi/samples/
+
+大阪府については固定URLのHTML・JSON・SVGも公開しています。
 
 - HTML: https://kafka2306.github.io/cedar-pollen-bi/samples/osaka/
 - JSON: https://kafka2306.github.io/cedar-pollen-bi/samples/osaka/data.json
 - SVG: https://kafka2306.github.io/cedar-pollen-bi/samples/osaka/chart.svg
 
-数値・単位・比較率・出典は `data/official/moe-cedar-bud-2025.csv` から再生成し、CIで一致を検証します。
+数値・単位・比較率・出典は `data/official/moe-cedar-bud-2025.csv` から再生成した `api/v1/editorial-pack.json` を利用します。全国ページは別のデータコピーを持ちません。
 
 ## 再利用条件
 
