@@ -19,6 +19,11 @@ with (ROOT / "data" / "official" / "moe-sugi-pollen-2026.csv").open(encoding="ut
 
 result_2025 = json.loads((ROOT / "analysis" / "2024-bud-2025-sugi-pollen.json").read_text(encoding="utf-8"))
 result_2026 = json.loads((ROOT / "analysis" / "2025-bud-2026-sugi-pollen.json").read_text(encoding="utf-8"))
+year_over_year = json.loads(
+    (ROOT / "analysis" / "2024-2025-bud-change-2025-2026-sugi-pollen-change.json").read_text(
+        encoding="utf-8"
+    )
+)
 
 assert len(buds_2024) == 46
 assert len({row["prefecture_code"] for row in buds_2024}) == 46
@@ -74,4 +79,26 @@ assert any("2年続けて" in note for note in result_2026["interpretation"])
 assert any("空間単位が一致しない" in note for note in result_2026["interpretation"])
 assert any("個人症状の予測として表示しない" in note for note in result_2026["interpretation"])
 
-print("bud -> next spring sugi pollen validation passed: 2024->2025 26 pairs; 2025->2026 27 pairs")
+assert year_over_year["input"]["common_prefectures_before_site_check"] == 25
+assert year_over_year["input"]["same_site_paired_prefectures"] == 23
+assert {row["prefecture_code"] for row in year_over_year["input"]["excluded_site_changes"]} == {
+    "35",
+    "38",
+}
+assert year_over_year["metrics"] == {
+    "pearson_log_ratio": 0.480092,
+    "spearman_log_ratio": 0.327075,
+    "same_direction_count": 14,
+    "same_direction_fraction": 0.608696,
+    "leave_one_out_pearson_min": 0.358103,
+    "leave_one_out_pearson_max": 0.545031,
+}
+assert len(year_over_year["records"]) == 23
+assert all(row["prefecture_code"] not in {"35", "38"} for row in year_over_year["records"])
+assert any("予測精度や予測式として扱わない" in note for note in year_over_year["interpretation"])
+assert any("地点変更" in note for note in year_over_year["interpretation"])
+
+print(
+    "bud -> next spring sugi pollen validation passed: "
+    "2024->2025 26 pairs; 2025->2026 27 pairs; year-over-year same-site 23 pairs"
+)
