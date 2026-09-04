@@ -8,6 +8,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 subprocess.run([sys.executable, str(ROOT / "scripts" / "analyze_bud_to_sugi_pollen.py")], check=True)
 
+with (ROOT / "data" / "official" / "moe-cedar-bud-2023.csv").open(encoding="utf-8", newline="") as file:
+    buds_2023 = list(csv.DictReader(file))
+with (ROOT / "data" / "official" / "moe-sugi-pollen-2024.csv").open(encoding="utf-8", newline="") as file:
+    pollen_2024 = list(csv.DictReader(file))
 with (ROOT / "data" / "official" / "moe-cedar-bud-2024.csv").open(encoding="utf-8", newline="") as file:
     buds_2024 = list(csv.DictReader(file))
 with (ROOT / "data" / "official" / "moe-sugi-pollen-2025.csv").open(encoding="utf-8", newline="") as file:
@@ -17,6 +21,7 @@ with (ROOT / "data" / "official" / "moe-cedar-bud-2025.csv").open(encoding="utf-
 with (ROOT / "data" / "official" / "moe-sugi-pollen-2026.csv").open(encoding="utf-8", newline="") as file:
     pollen_2026 = list(csv.DictReader(file))
 
+result_2024 = json.loads((ROOT / "analysis" / "2023-bud-2024-sugi-pollen.json").read_text(encoding="utf-8"))
 result_2025 = json.loads((ROOT / "analysis" / "2024-bud-2025-sugi-pollen.json").read_text(encoding="utf-8"))
 result_2026 = json.loads((ROOT / "analysis" / "2025-bud-2026-sugi-pollen.json").read_text(encoding="utf-8"))
 year_over_year = json.loads(
@@ -24,6 +29,38 @@ year_over_year = json.loads(
         encoding="utf-8"
     )
 )
+
+assert len(buds_2023) == 35
+assert len({row["prefecture_code"] for row in buds_2023}) == 35
+assert all(row["survey_year"] == "2023" for row in buds_2023)
+assert all(row["source_url"] == "https://www.env.go.jp/content/000184013.pdf" for row in buds_2023)
+assert next(row for row in buds_2023 if row["prefecture_code"] == "27")["observation_count_per_m2"] == "4083"
+
+assert len(pollen_2024) == 24
+assert len({row["prefecture_code"] for row in pollen_2024}) == 24
+assert all(row["season_year"] == "2024" for row in pollen_2024)
+assert all(row["source_url"] == "https://www.env.go.jp/content/000278280.pdf" for row in pollen_2024)
+assert all(row["site_name_ja"] == "" for row in pollen_2024)
+osaka_2024 = next(row for row in pollen_2024 if row["prefecture_code"] == "27")
+assert osaka_2024["sugi_pollen_count_per_cm2"] == "574"
+assert osaka_2024["total_pollen_count_per_cm2"] == "726"
+
+assert result_2024["input"]["paired_records"] == 18
+assert {row["prefecture_code"] for row in result_2024["input"]["unpaired_pollen_records_without_bud_survey"]} == {
+    "01",
+    "21",
+    "24",
+    "30",
+    "43",
+    "45",
+}
+assert result_2024["metrics"] == {
+    "pearson_raw": 0.118356,
+    "spearman_rank": 0.155831,
+    "pearson_log1p": 0.097254,
+}
+assert any("3シーズン連続" in note for note in result_2024["interpretation"])
+assert any("欠損都道府県を推測で補わない" in note for note in result_2024["interpretation"])
 
 assert len(buds_2024) == 46
 assert len({row["prefecture_code"] for row in buds_2024}) == 46
@@ -100,5 +137,6 @@ assert any("地点変更" in note for note in year_over_year["interpretation"])
 
 print(
     "bud -> next spring sugi pollen validation passed: "
-    "2024->2025 26 pairs; 2025->2026 27 pairs; year-over-year same-site 23 pairs"
+    "2023->2024 18 pairs; 2024->2025 26 pairs; 2025->2026 27 pairs; "
+    "year-over-year same-site 23 pairs"
 )

@@ -1,0 +1,55 @@
+{
+  "question": "2023年11～12月のスギ雄花花芽量は、同じ都道府県で2024年春に観測されたスギ花粉総飛散数と横断的に対応するか",
+  "input": {
+    "bud_survey": {
+      "year": 2023,
+      "records": 35,
+      "unit": "個/m²",
+      "source_url": "https://www.env.go.jp/content/000184013.pdf"
+    },
+    "sugi_pollen": {
+      "season_year": 2024,
+      "records": 24,
+      "unit": "個/cm²",
+      "source_url": "https://www.env.go.jp/content/000278280.pdf"
+    },
+    "paired_records": 18,
+    "unpaired_pollen_records_without_bud_survey": [
+      {
+        "prefecture_code": "01",
+        "prefecture_name_ja": "北海道"
+      },
+      {
+        "prefecture_code": "21",
+        "prefecture_name_ja": "岐阜県"
+      },
+      {
+        "prefecture_code": "24",
+        "prefecture_name_ja": "三重県"
+      },
+      {
+        "prefecture_code": "30",
+        "prefecture_name_ja": "和歌山県"
+      },
+      {
+        "prefecture_code": "43",
+        "prefecture_name_ja": "熊本県"
+      },
+      {
+        "prefecture_code": "45",
+        "prefecture_name_ja": "宮崎県"
+      }
+    ]
+  },
+  "metrics": {
+    "pearson_raw": 0.118356,
+    "spearman_rank": 0.155831,
+    "pearson_log1p": 0.097254
+  },
+  "interpretation": [
+    "環境省の両資料に共通する18都道府県では、2023年の花芽量の絶対値と2024年春のスギ花粉実測値に強い単純な横断相関は確認できない。",
+    "2024年花芽量→2025年春、2025年花芽量→2026年春の既存分析も合わせ、3シーズン連続で都道府県単位の絶対値を単純な予測式として扱う根拠は得られなかった。",
+    "2023年花芽調査は35都道府県、2024年春の花粉表は24都道府県であり、両方に公式値がある18都道府県だけを対応付けた。欠損都道府県を推測で補わない。",
+    "花芽調査のスギ林と花粉観測地点は空間単位が一致せず、気象や輸送条件も調整していないため、因果効果や個別地域の予測精度として解釈しない。"
+  ]
+}
