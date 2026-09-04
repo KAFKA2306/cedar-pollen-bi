@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>都道府県別 スギ雄花花芽量 2025</title>
+<style>
+body{font-family:system-ui,sans-serif;max-width:900px;margin:0 auto;padding:24px;line-height:1.6;color:#222}select,button{font:inherit;padding:.5rem}.card{border:1px solid #ddd;border-radius:12px;padding:20px;margin:20px 0}dl{display:grid;grid-template-columns:max-content 1fr;gap:.35rem 1rem}dt{font-weight:700}svg{width:100%;height:auto}.error{padding:12px;background:#fee;border:1px solid #d77}a{overflow-wrap:anywhere}</style>
+</head>
+<body>
+<main>
+<h1>都道府県別 スギ雄花花芽量 2025</h1>
+<p>環境省「令和7年度スギ雄花花芽調査」の検証済みデータから、47都道府県を選んでHTML表示・JSON保存・SVG保存に再利用できます。</p>
+<p><strong>注意:</strong> スギ雄花の花芽量であり、空中花粉飛散量そのものや個人の症状を予測する値ではありません。</p>
+<label for="prefecture">都道府県</label>
+<select id="prefecture" disabled><option>読み込み中…</option></select>
+<p id="status" role="status"></p>
+<section id="result" class="card" hidden>
+<h2 id="name"></h2>
+<dl>
+<dt>花芽量</dt><dd id="observation"></dd>
+<dt>過去平均</dt><dd id="baseline"></dd>
+<dt>公式比較率</dt><dd id="ratio"></dd>
+<dt>比較可否</dt><dd id="comparison"></dd>
+</dl>
+<p>出典: <a id="source" rel="noopener"></a></p>
+<div id="chart"></div>
+<p><button id="download-json">JSONを保存</button> <button id="download-svg">SVGを保存</button></p>
+</section>
+</main>
+<script>
+const select=document.querySelector('#prefecture');
+const status=document.querySelector('#status');
+const result=document.querySelector('#result');
+let records=[];
+let current=null;
+const note='スギ雄花の花芽量であり、空中花粉飛散量そのものや個人の症状を予測する値ではありません。';
+function escapeXml(value){return String(value).replace(/[<>&"']/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&apos;'}[c]));}
+function svgFor(r){
+ const obs=r.observation_count_per_m2,base=r.baseline_average_count_per_m2,ratio=r.official_comparison_percent;
+ const comparable=r.comparison_status==='comparable';
+ const max=Math.max(obs,base||obs,1);const ow=Math.round(508*obs/max);const bw=base?Math.round(508*base/max):0;
+ const summary=comparable?`花芽量 ${obs.toLocaleString()} 個/m² / 過去平均 ${base.toLocaleString()} 個/m² / 公式比較率 ${ratio}%`:`花芽量 ${obs.toLocaleString()} 個/m² / 過去平均なし / 比較不能`;
+ return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 420" role="img"><title>${escapeXml(r.prefecture_name_ja)} スギ雄花花芽量 2025</title><rect width="800" height="420" fill="white"/><text x="48" y="55" font-family="sans-serif" font-size="28">${escapeXml(r.prefecture_name_ja)} スギ雄花花芽量 2025</text><text x="48" y="100" font-family="sans-serif" font-size="18">${escapeXml(summary)}</text><text x="48" y="155" font-family="sans-serif" font-size="16">花芽量</text><rect x="180" y="135" width="${ow}" height="28" fill="#555"/><text x="700" y="156" font-family="sans-serif" font-size="16">${obs.toLocaleString()}</text>${comparable?`<text x="48" y="215" font-family="sans-serif" font-size="16">過去平均</text><rect x="180" y="195" width="${bw}" height="28" fill="#999"/><text x="700" y="216" font-family="sans-serif" font-size="16">${base.toLocaleString()}</text>`:`<text x="48" y="215" font-family="sans-serif" font-size="16">過去平均なしのため比率比較は行いません</text>`}<text x="48" y="285" font-family="sans-serif" font-size="15">${escapeXml(note)}</text><text x="48" y="330" font-family="sans-serif" font-size="14">出典: 環境省「令和7年度スギ雄花花芽調査」資料1、${r.source_page}ページ</text></svg>`;
+}
+function render(r){current=r;document.querySelector('#name').textContent=`${r.prefecture_name_ja} スギ雄花花芽量 2025`;document.querySelector('#observation').textContent=`${r.observation_count_per_m2.toLocaleString()} 個/m²`;document.querySelector('#baseline').textContent=r.baseline_average_count_per_m2==null?'なし':`${r.baseline_average_count_per_m2.toLocaleString()} 個/m²`;document.querySelector('#ratio').textContent=r.official_comparison_percent==null?'なし':`${r.official_comparison_percent}%`;document.querySelector('#comparison').textContent=r.comparison_status==='comparable'?'比較可能':`比較不能（${r.not_comparable_reason||'過去平均なし'}）`;const source=document.querySelector('#source');source.href=r.source_url;source.textContent=`環境省「令和7年度スギ雄花花芽調査」資料1、${r.source_page}ページ`;document.querySelector('#chart').innerHTML=svgFor(r);result.hidden=false;history.replaceState(null,'',`?prefecture=${r.prefecture_code}`);}
+function download(name,text,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),0);}
+select.addEventListener('change',()=>render(records.find(r=>r.prefecture_code===select.value)));
+document.querySelector('#download-json').addEventListener('click',()=>download(`${current.prefecture_code}.json`,JSON.stringify({...current,note},null,2)+'\n','application/json'));
+document.querySelector('#download-svg').addEventListener('click',()=>download(`${current.prefecture_code}.svg`,svgFor(current)+'\n','image/svg+xml'));
+fetch('../api/v1/editorial-pack.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(`HTTP ${r.status}`);return r.json();}).then(data=>{records=data.records;if(!Array.isArray(records)||records.length!==47)throw new Error('47都道府県の正準データを取得できませんでした');select.innerHTML='';for(const r of records){const o=document.createElement('option');o.value=r.prefecture_code;o.textContent=r.prefecture_name_ja;select.append(o);}select.disabled=false;const requested=new URLSearchParams(location.search).get('prefecture');const initial=records.find(r=>r.prefecture_code===requested)||records[26];select.value=initial.prefecture_code;render(initial);status.textContent=`${records.length}都道府県の正準データを読み込みました。`;}).catch(error=>{status.className='error';status.textContent=`データ取得に失敗しました: ${error.message}`;select.disabled=true;});
+</script>
+</body>
+</html>
