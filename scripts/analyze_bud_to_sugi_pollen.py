@@ -48,6 +48,8 @@ ANALYSES = [
     },
 ]
 
+YEAR_OVER_YEAR_OUTPUT = ROOT / "analysis" / "2024-2025-bud-change-2025-2026-sugi-pollen-change.json"
+
 
 def load_csv(path):
     with path.open(encoding="utf-8", newline="") as file:
@@ -165,9 +167,106 @@ def analyze(spec):
     )
 
 
+def analyze_year_over_year_change():
+    buds_2024 = {row["prefecture_code"]: row for row in load_csv(ROOT / "data" / "official" / "moe-cedar-bud-2024.csv")}
+    buds_2025 = {row["prefecture_code"]: row for row in load_csv(ROOT / "data" / "official" / "moe-cedar-bud-2025.csv")}
+    pollen_2025 = {row["prefecture_code"]: row for row in load_csv(ROOT / "data" / "official" / "moe-sugi-pollen-2025.csv")}
+    pollen_2026 = {row["prefecture_code"]: row for row in load_csv(ROOT / "data" / "official" / "moe-sugi-pollen-2026.csv")}
+
+    common_codes = sorted(set(pollen_2025) & set(pollen_2026))
+    records = []
+    excluded_site_changes = []
+    for code in common_codes:
+        previous_pollen = pollen_2025[code]
+        current_pollen = pollen_2026[code]
+        if previous_pollen["site_name_ja"] != current_pollen["site_name_ja"]:
+            excluded_site_changes.append(
+                {
+                    "prefecture_code": code,
+                    "prefecture_name_ja": previous_pollen["prefecture_name_ja"],
+                    "2025_site_name_ja": previous_pollen["site_name_ja"],
+                    "2026_site_name_ja": current_pollen["site_name_ja"],
+                }
+            )
+            continue
+        if code not in buds_2024 or code not in buds_2025:
+            raise ValueError(f"Missing bud observation for prefecture_code={code}")
+        bud_previous = float(buds_2024[code]["observation_count_per_m2"])
+        bud_current = float(buds_2025[code]["observation_count_per_m2"])
+        pollen_previous = float(previous_pollen["sugi_pollen_count_per_cm2"])
+        pollen_current = float(current_pollen["sugi_pollen_count_per_cm2"])
+        if min(bud_previous, bud_current, pollen_previous, pollen_current) <= 0:
+            raise ValueError(f"Year-over-year log ratio requires positive observations: {code}")
+        bud_log_ratio = math.log(bud_current / bud_previous)
+        pollen_log_ratio = math.log(pollen_current / pollen_previous)
+        records.append(
+            {
+                "prefecture_code": code,
+                "prefecture_name_ja": previous_pollen["prefecture_name_ja"],
+                "pollen_site_name_ja": previous_pollen["site_name_ja"],
+                "bud_2024_count_per_m2": bud_previous,
+                "bud_2025_count_per_m2": bud_current,
+                "sugi_pollen_2025_count_per_cm2": pollen_previous,
+                "sugi_pollen_2026_count_per_cm2": pollen_current,
+                "bud_log_ratio_2025_over_2024": round(bud_log_ratio, 6),
+                "pollen_log_ratio_2026_over_2025": round(pollen_log_ratio, 6),
+            }
+        )
+
+    bud_changes = [row["bud_log_ratio_2025_over_2024"] for row in records]
+    pollen_changes = [row["pollen_log_ratio_2026_over_2025"] for row in records]
+    same_direction_count = sum(
+        (bud_change > 0) == (pollen_change > 0)
+        for bud_change, pollen_change in zip(bud_changes, pollen_changes)
+    )
+    leave_one_out = []
+    for index in range(len(records)):
+        leave_one_out.append(
+            pearson(
+                [value for position, value in enumerate(bud_changes) if position != index],
+                [value for position, value in enumerate(pollen_changes) if position != index],
+            )
+        )
+
+    result = {
+        "question": "同じ花粉観測地点を維持した都道府県で、2024年から2025年のスギ雄花花芽量の前年比は、2025年から2026年のスギ花粉実測値の前年比と対応するか",
+        "input": {
+            "bud_2024_source_url": "https://www.env.go.jp/content/000278567.pdf",
+            "bud_2025_source_url": "https://www.env.go.jp/content/000365031.pdf",
+            "pollen_2025_source_url": "https://www.env.go.jp/content/000365034.pdf",
+            "pollen_2026_source_url": "https://www.env.go.jp/content/000374236.pdf",
+            "pollen_2026_as_of": "2026-06-19",
+            "common_prefectures_before_site_check": len(common_codes),
+            "same_site_paired_prefectures": len(records),
+            "excluded_site_changes": excluded_site_changes,
+        },
+        "metrics": {
+            "pearson_log_ratio": round(pearson(bud_changes, pollen_changes), 6),
+            "spearman_log_ratio": round(
+                pearson(average_ranks(bud_changes), average_ranks(pollen_changes)), 6
+            ),
+            "same_direction_count": same_direction_count,
+            "same_direction_fraction": round(same_direction_count / len(records), 6),
+            "leave_one_out_pearson_min": round(min(leave_one_out), 6),
+            "leave_one_out_pearson_max": round(max(leave_one_out), 6),
+        },
+        "records": records,
+        "interpretation": [
+            "同じ花粉観測地点を維持した23都道府県では、花芽量と翌春スギ花粉量の前年比の対数比に中程度の正のPearson相関がみられた。絶対値の都道府県横断比較より、同一地域内の年変化を見る方が対応を捉えやすい可能性がある。",
+            "一方、増減方向が一致したのは23都道府県中14件であり、順位相関も強くない。この2年分だけを地域別の予測精度や予測式として扱わない。",
+            "山口県と愛媛県は2025年と2026年で花粉観測地点名が変わったため除外した。地点変更を同じ時系列として扱わない。",
+            "花芽調査のスギ林と花粉観測地点は空間単位が一致せず、気象や輸送条件も調整していないため、因果効果や個人症状の予測として解釈しない。",
+        ],
+    }
+    YEAR_OVER_YEAR_OUTPUT.write_text(
+        json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
+
+
 def main():
     for spec in ANALYSES:
         analyze(spec)
+    analyze_year_over_year_change()
 
 
 if __name__ == "__main__":
