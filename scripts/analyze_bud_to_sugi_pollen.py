@@ -8,6 +8,25 @@ ROOT = Path(__file__).resolve().parents[1]
 
 ANALYSES = [
     {
+        "bud_path": ROOT / "data" / "official" / "moe-cedar-bud-2023.csv",
+        "pollen_path": ROOT / "data" / "official" / "moe-sugi-pollen-2024.csv",
+        "output_path": ROOT / "analysis" / "2023-bud-2024-sugi-pollen.json",
+        "bud_year": 2023,
+        "pollen_year": 2024,
+        "expected_bud_records": 35,
+        "expected_pollen_records": 24,
+        "allow_partial_overlap": True,
+        "bud_source_url": "https://www.env.go.jp/content/000184013.pdf",
+        "pollen_source_url": "https://www.env.go.jp/content/000278280.pdf",
+        "question": "2023年11～12月のスギ雄花花芽量は、同じ都道府県で2024年春に観測されたスギ花粉総飛散数と横断的に対応するか",
+        "interpretation": [
+            "環境省の両資料に共通する18都道府県では、2023年の花芽量の絶対値と2024年春のスギ花粉実測値に強い単純な横断相関は確認できない。",
+            "2024年花芽量→2025年春、2025年花芽量→2026年春の既存分析も合わせ、3シーズン連続で都道府県単位の絶対値を単純な予測式として扱う根拠は得られなかった。",
+            "2023年花芽調査は35都道府県、2024年春の花粉表は24都道府県であり、両方に公式値がある18都道府県だけを対応付けた。欠損都道府県を推測で補わない。",
+            "花芽調査のスギ林と花粉観測地点は空間単位が一致せず、気象や輸送条件も調整していないため、因果効果や個別地域の予測精度として解釈しない。",
+        ],
+    },
+    {
         "bud_path": ROOT / "data" / "official" / "moe-cedar-bud-2024.csv",
         "pollen_path": ROOT / "data" / "official" / "moe-sugi-pollen-2025.csv",
         "output_path": ROOT / "analysis" / "2024-bud-2025-sugi-pollen.json",
@@ -48,7 +67,9 @@ ANALYSES = [
     },
 ]
 
-YEAR_OVER_YEAR_OUTPUT = ROOT / "analysis" / "2024-2025-bud-change-2025-2026-sugi-pollen-change.json"
+YEAR_OVER_YEAR_OUTPUT = (
+    ROOT / "analysis" / "2024-2025-bud-change-2025-2026-sugi-pollen-change.json"
+)
 
 
 def load_csv(path):
@@ -103,9 +124,18 @@ def analyze(spec):
 
     bud_values = []
     pollen_values = []
+    unpaired_without_bud_survey = []
     for pollen_row in pollen:
         bud_row = buds_by_code.get(pollen_row["prefecture_code"])
         if bud_row is None:
+            if spec.get("allow_partial_overlap"):
+                unpaired_without_bud_survey.append(
+                    {
+                        "prefecture_code": pollen_row["prefecture_code"],
+                        "prefecture_name_ja": pollen_row["prefecture_name_ja"],
+                    }
+                )
+                continue
             raise ValueError(
                 f"No {spec['bud_year']} bud record for prefecture_code={pollen_row['prefecture_code']}"
             )
@@ -139,7 +169,9 @@ def analyze(spec):
         },
         "metrics": {
             "pearson_raw": round(pearson(bud_values, pollen_values), 6),
-            "spearman_rank": round(pearson(average_ranks(bud_values), average_ranks(pollen_values)), 6),
+            "spearman_rank": round(
+                pearson(average_ranks(bud_values), average_ranks(pollen_values)), 6
+            ),
             "pearson_log1p": round(
                 pearson(
                     [math.log1p(value) for value in bud_values],
@@ -150,9 +182,17 @@ def analyze(spec):
         },
         "interpretation": spec["interpretation"],
     }
+    if spec.get("allow_partial_overlap"):
+        result["input"]["unpaired_pollen_records_without_bud_survey"] = (
+            unpaired_without_bud_survey
+        )
 
     if spec["pollen_year"] == 2026:
-        prior = json.loads((ROOT / "analysis" / "2024-bud-2025-sugi-pollen.json").read_text(encoding="utf-8"))
+        prior = json.loads(
+            (ROOT / "analysis" / "2024-bud-2025-sugi-pollen.json").read_text(
+                encoding="utf-8"
+            )
+        )
         result["comparison_to_prior_analysis"] = {
             "artifact": "analysis/2024-bud-2025-sugi-pollen.json",
             "prior_paired_records": prior["input"]["paired_records"],
@@ -168,10 +208,22 @@ def analyze(spec):
 
 
 def analyze_year_over_year_change():
-    buds_2024 = {row["prefecture_code"]: row for row in load_csv(ROOT / "data" / "official" / "moe-cedar-bud-2024.csv")}
-    buds_2025 = {row["prefecture_code"]: row for row in load_csv(ROOT / "data" / "official" / "moe-cedar-bud-2025.csv")}
-    pollen_2025 = {row["prefecture_code"]: row for row in load_csv(ROOT / "data" / "official" / "moe-sugi-pollen-2025.csv")}
-    pollen_2026 = {row["prefecture_code"]: row for row in load_csv(ROOT / "data" / "official" / "moe-sugi-pollen-2026.csv")}
+    buds_2024 = {
+        row["prefecture_code"]: row
+        for row in load_csv(ROOT / "data" / "official" / "moe-cedar-bud-2024.csv")
+    }
+    buds_2025 = {
+        row["prefecture_code"]: row
+        for row in load_csv(ROOT / "data" / "official" / "moe-cedar-bud-2025.csv")
+    }
+    pollen_2025 = {
+        row["prefecture_code"]: row
+        for row in load_csv(ROOT / "data" / "official" / "moe-sugi-pollen-2025.csv")
+    }
+    pollen_2026 = {
+        row["prefecture_code"]: row
+        for row in load_csv(ROOT / "data" / "official" / "moe-sugi-pollen-2026.csv")
+    }
 
     common_codes = sorted(set(pollen_2025) & set(pollen_2026))
     records = []
