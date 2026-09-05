@@ -11,17 +11,59 @@
     "same_site_paired_prefectures": 14,
     "excluded_site_changes": [],
     "excluded_unverified_site_identity": [
-      {"prefecture_code": "01", "prefecture_name_ja": "北海道", "2024_site_name_ja": null, "2025_site_name_ja": "札幌市"},
-      {"prefecture_code": "13", "prefecture_name_ja": "東京都", "2024_site_name_ja": null, "2025_site_name_ja": "千代田区"},
-      {"prefecture_code": "14", "prefecture_name_ja": "神奈川県", "2024_site_name_ja": null, "2025_site_name_ja": "横浜市"},
-      {"prefecture_code": "38", "prefecture_name_ja": "愛媛県", "2024_site_name_ja": null, "2025_site_name_ja": "松山市"},
-      {"prefecture_code": "43", "prefecture_name_ja": "熊本県", "2024_site_name_ja": null, "2025_site_name_ja": "八代市"},
-      {"prefecture_code": "45", "prefecture_name_ja": "宮崎県", "2024_site_name_ja": null, "2025_site_name_ja": "宮崎市"}
+      {
+        "prefecture_code": "01",
+        "prefecture_name_ja": "北海道",
+        "2024_site_name_ja": null,
+        "2025_site_name_ja": "札幌市"
+      },
+      {
+        "prefecture_code": "13",
+        "prefecture_name_ja": "東京都",
+        "2024_site_name_ja": null,
+        "2025_site_name_ja": "千代田区"
+      },
+      {
+        "prefecture_code": "14",
+        "prefecture_name_ja": "神奈川県",
+        "2024_site_name_ja": null,
+        "2025_site_name_ja": "横浜市"
+      },
+      {
+        "prefecture_code": "38",
+        "prefecture_name_ja": "愛媛県",
+        "2024_site_name_ja": null,
+        "2025_site_name_ja": "松山市"
+      },
+      {
+        "prefecture_code": "43",
+        "prefecture_name_ja": "熊本県",
+        "2024_site_name_ja": null,
+        "2025_site_name_ja": "八代市"
+      },
+      {
+        "prefecture_code": "45",
+        "prefecture_name_ja": "宮崎県",
+        "2024_site_name_ja": null,
+        "2025_site_name_ja": "宮崎市"
+      }
     ],
     "excluded_missing_bud_observation": [
-      {"prefecture_code": "21", "prefecture_name_ja": "岐阜県", "pollen_site_name_ja": "大垣市"},
-      {"prefecture_code": "24", "prefecture_name_ja": "三重県", "pollen_site_name_ja": "津市"},
-      {"prefecture_code": "30", "prefecture_name_ja": "和歌山県", "pollen_site_name_ja": "橋本市"}
+      {
+        "prefecture_code": "21",
+        "prefecture_name_ja": "岐阜県",
+        "pollen_site_name_ja": "大垣市"
+      },
+      {
+        "prefecture_code": "24",
+        "prefecture_name_ja": "三重県",
+        "pollen_site_name_ja": "津市"
+      },
+      {
+        "prefecture_code": "30",
+        "prefecture_name_ja": "和歌山県",
+        "pollen_site_name_ja": "橋本市"
+      }
     ]
   },
   "metrics": {
@@ -33,20 +75,160 @@
     "leave_one_out_pearson_max": 0.372131
   },
   "records": [
-    {"prefecture_code": "02", "prefecture_name_ja": "青森県", "pollen_site_name_ja": "弘前市", "bud_2023_count_per_m2": 4289.0, "bud_2024_count_per_m2": 1838.0, "sugi_pollen_2024_count_per_cm2": 5051.0, "sugi_pollen_2025_count_per_cm2": 2052.0, "bud_log_ratio_2024_over_2023": -0.847376, "pollen_log_ratio_2025_over_2024": -0.900771},
-    {"prefecture_code": "06", "prefecture_name_ja": "山形県", "pollen_site_name_ja": "山形市", "bud_2023_count_per_m2": 1145.0, "bud_2024_count_per_m2": 859.0, "sugi_pollen_2024_count_per_cm2": 2870.0, "sugi_pollen_2025_count_per_cm2": 3133.0, "bud_log_ratio_2024_over_2023": -0.287391, "pollen_log_ratio_2025_over_2024": 0.087679},
-    {"prefecture_code": "09", "prefecture_name_ja": "栃木県", "pollen_site_name_ja": "壬生町", "bud_2023_count_per_m2": 3393.0, "bud_2024_count_per_m2": 5441.0, "sugi_pollen_2024_count_per_cm2": 4303.0, "sugi_pollen_2025_count_per_cm2": 5699.0, "bud_log_ratio_2024_over_2023": 0.472248, "pollen_log_ratio_2025_over_2024": 0.280978},
-    {"prefecture_code": "17", "prefecture_name_ja": "石川県", "pollen_site_name_ja": "小松市", "bud_2023_count_per_m2": 5947.0, "bud_2024_count_per_m2": 6849.0, "sugi_pollen_2024_count_per_cm2": 2592.0, "sugi_pollen_2025_count_per_cm2": 3195.0, "bud_log_ratio_2024_over_2023": 0.141216, "pollen_log_ratio_2025_over_2024": 0.209157},
-    {"prefecture_code": "19", "prefecture_name_ja": "山梨県", "pollen_site_name_ja": "甲府市", "bud_2023_count_per_m2": 4245.0, "bud_2024_count_per_m2": 5559.0, "sugi_pollen_2024_count_per_cm2": 959.0, "sugi_pollen_2025_count_per_cm2": 2850.0, "bud_log_ratio_2024_over_2023": 0.269676, "pollen_log_ratio_2025_over_2024": 1.089183},
-    {"prefecture_code": "22", "prefecture_name_ja": "静岡県", "pollen_site_name_ja": "静岡市", "bud_2023_count_per_m2": 2608.0, "bud_2024_count_per_m2": 8830.0, "sugi_pollen_2024_count_per_cm2": 9965.0, "sugi_pollen_2025_count_per_cm2": 8672.0, "bud_log_ratio_2024_over_2023": 1.219571, "pollen_log_ratio_2025_over_2024": -0.13898},
-    {"prefecture_code": "26", "prefecture_name_ja": "京都府", "pollen_site_name_ja": "京都市", "bud_2023_count_per_m2": 1978.0, "bud_2024_count_per_m2": 17098.0, "sugi_pollen_2024_count_per_cm2": 1054.0, "sugi_pollen_2025_count_per_cm2": 1865.0, "bud_log_ratio_2024_over_2023": 2.156875, "pollen_log_ratio_2025_over_2024": 0.570669},
-    {"prefecture_code": "27", "prefecture_name_ja": "大阪府", "pollen_site_name_ja": "泉佐野市", "bud_2023_count_per_m2": 4083.0, "bud_2024_count_per_m2": 18932.0, "sugi_pollen_2024_count_per_cm2": 574.0, "sugi_pollen_2025_count_per_cm2": 1586.0, "bud_log_ratio_2024_over_2023": 1.534022, "pollen_log_ratio_2025_over_2024": 1.016341},
-    {"prefecture_code": "28", "prefecture_name_ja": "兵庫県", "pollen_site_name_ja": "西宮市", "bud_2023_count_per_m2": 2625.0, "bud_2024_count_per_m2": 2198.0, "sugi_pollen_2024_count_per_cm2": 1200.0, "sugi_pollen_2025_count_per_cm2": 3628.0, "bud_log_ratio_2024_over_2023": -0.177533, "pollen_log_ratio_2025_over_2024": 1.10636},
-    {"prefecture_code": "31", "prefecture_name_ja": "鳥取県", "pollen_site_name_ja": "米子市", "bud_2023_count_per_m2": 4759.0, "bud_2024_count_per_m2": 6920.0, "sugi_pollen_2024_count_per_cm2": 1860.0, "sugi_pollen_2025_count_per_cm2": 6506.0, "bud_log_ratio_2024_over_2023": 0.374378, "pollen_log_ratio_2025_over_2024": 1.252148},
-    {"prefecture_code": "34", "prefecture_name_ja": "広島県", "pollen_site_name_ja": "尾道市", "bud_2023_count_per_m2": 2627.0, "bud_2024_count_per_m2": 4128.0, "sugi_pollen_2024_count_per_cm2": 597.0, "sugi_pollen_2025_count_per_cm2": 1686.0, "bud_log_ratio_2024_over_2023": 0.451951, "pollen_log_ratio_2025_over_2024": 1.038197},
-    {"prefecture_code": "35", "prefecture_name_ja": "山口県", "pollen_site_name_ja": "山口市", "bud_2023_count_per_m2": 4194.0, "bud_2024_count_per_m2": 7418.0, "sugi_pollen_2024_count_per_cm2": 2337.0, "sugi_pollen_2025_count_per_cm2": 10063.0, "bud_log_ratio_2024_over_2023": 0.570255, "pollen_log_ratio_2025_over_2024": 1.459997},
-    {"prefecture_code": "37", "prefecture_name_ja": "香川県", "pollen_site_name_ja": "三木町", "bud_2023_count_per_m2": 4319.0, "bud_2024_count_per_m2": 5575.0, "sugi_pollen_2024_count_per_cm2": 190.0, "sugi_pollen_2025_count_per_cm2": 1341.0, "bud_log_ratio_2024_over_2023": 0.255268, "pollen_log_ratio_2025_over_2024": 1.954147},
-    {"prefecture_code": "40", "prefecture_name_ja": "福岡県", "pollen_site_name_ja": "福岡市", "bud_2023_count_per_m2": 1718.0, "bud_2024_count_per_m2": 4074.0, "sugi_pollen_2024_count_per_cm2": 1898.0, "sugi_pollen_2025_count_per_cm2": 7185.0, "bud_log_ratio_2024_over_2023": 0.863464, "pollen_log_ratio_2025_over_2024": 1.331195}
+    {
+      "prefecture_code": "02",
+      "prefecture_name_ja": "青森県",
+      "pollen_site_name_ja": "弘前市",
+      "bud_2023_count_per_m2": 4289.0,
+      "bud_2024_count_per_m2": 1838.0,
+      "sugi_pollen_2024_count_per_cm2": 5051.0,
+      "sugi_pollen_2025_count_per_cm2": 2052.0,
+      "bud_log_ratio_2024_over_2023": -0.847376,
+      "pollen_log_ratio_2025_over_2024": -0.900771
+    },
+    {
+      "prefecture_code": "06",
+      "prefecture_name_ja": "山形県",
+      "pollen_site_name_ja": "山形市",
+      "bud_2023_count_per_m2": 1145.0,
+      "bud_2024_count_per_m2": 859.0,
+      "sugi_pollen_2024_count_per_cm2": 2870.0,
+      "sugi_pollen_2025_count_per_cm2": 3133.0,
+      "bud_log_ratio_2024_over_2023": -0.287391,
+      "pollen_log_ratio_2025_over_2024": 0.087679
+    },
+    {
+      "prefecture_code": "09",
+      "prefecture_name_ja": "栃木県",
+      "pollen_site_name_ja": "壬生町",
+      "bud_2023_count_per_m2": 3393.0,
+      "bud_2024_count_per_m2": 5441.0,
+      "sugi_pollen_2024_count_per_cm2": 4303.0,
+      "sugi_pollen_2025_count_per_cm2": 5699.0,
+      "bud_log_ratio_2024_over_2023": 0.472248,
+      "pollen_log_ratio_2025_over_2024": 0.280978
+    },
+    {
+      "prefecture_code": "17",
+      "prefecture_name_ja": "石川県",
+      "pollen_site_name_ja": "小松市",
+      "bud_2023_count_per_m2": 5947.0,
+      "bud_2024_count_per_m2": 6849.0,
+      "sugi_pollen_2024_count_per_cm2": 2592.0,
+      "sugi_pollen_2025_count_per_cm2": 3195.0,
+      "bud_log_ratio_2024_over_2023": 0.141216,
+      "pollen_log_ratio_2025_over_2024": 0.209157
+    },
+    {
+      "prefecture_code": "19",
+      "prefecture_name_ja": "山梨県",
+      "pollen_site_name_ja": "甲府市",
+      "bud_2023_count_per_m2": 4245.0,
+      "bud_2024_count_per_m2": 5559.0,
+      "sugi_pollen_2024_count_per_cm2": 959.0,
+      "sugi_pollen_2025_count_per_cm2": 2850.0,
+      "bud_log_ratio_2024_over_2023": 0.269676,
+      "pollen_log_ratio_2025_over_2024": 1.089183
+    },
+    {
+      "prefecture_code": "22",
+      "prefecture_name_ja": "静岡県",
+      "pollen_site_name_ja": "静岡市",
+      "bud_2023_count_per_m2": 2608.0,
+      "bud_2024_count_per_m2": 8830.0,
+      "sugi_pollen_2024_count_per_cm2": 9965.0,
+      "sugi_pollen_2025_count_per_cm2": 8672.0,
+      "bud_log_ratio_2024_over_2023": 1.219571,
+      "pollen_log_ratio_2025_over_2024": -0.13898
+    },
+    {
+      "prefecture_code": "26",
+      "prefecture_name_ja": "京都府",
+      "pollen_site_name_ja": "京都市",
+      "bud_2023_count_per_m2": 1978.0,
+      "bud_2024_count_per_m2": 17098.0,
+      "sugi_pollen_2024_count_per_cm2": 1054.0,
+      "sugi_pollen_2025_count_per_cm2": 1865.0,
+      "bud_log_ratio_2024_over_2023": 2.156875,
+      "pollen_log_ratio_2025_over_2024": 0.570669
+    },
+    {
+      "prefecture_code": "27",
+      "prefecture_name_ja": "大阪府",
+      "pollen_site_name_ja": "泉佐野市",
+      "bud_2023_count_per_m2": 4083.0,
+      "bud_2024_count_per_m2": 18932.0,
+      "sugi_pollen_2024_count_per_cm2": 574.0,
+      "sugi_pollen_2025_count_per_cm2": 1586.0,
+      "bud_log_ratio_2024_over_2023": 1.534022,
+      "pollen_log_ratio_2025_over_2024": 1.016341
+    },
+    {
+      "prefecture_code": "28",
+      "prefecture_name_ja": "兵庫県",
+      "pollen_site_name_ja": "西宮市",
+      "bud_2023_count_per_m2": 2625.0,
+      "bud_2024_count_per_m2": 2198.0,
+      "sugi_pollen_2024_count_per_cm2": 1200.0,
+      "sugi_pollen_2025_count_per_cm2": 3628.0,
+      "bud_log_ratio_2024_over_2023": -0.177533,
+      "pollen_log_ratio_2025_over_2024": 1.10636
+    },
+    {
+      "prefecture_code": "31",
+      "prefecture_name_ja": "鳥取県",
+      "pollen_site_name_ja": "米子市",
+      "bud_2023_count_per_m2": 4759.0,
+      "bud_2024_count_per_m2": 6920.0,
+      "sugi_pollen_2024_count_per_cm2": 1860.0,
+      "sugi_pollen_2025_count_per_cm2": 6506.0,
+      "bud_log_ratio_2024_over_2023": 0.374378,
+      "pollen_log_ratio_2025_over_2024": 1.252148
+    },
+    {
+      "prefecture_code": "34",
+      "prefecture_name_ja": "広島県",
+      "pollen_site_name_ja": "尾道市",
+      "bud_2023_count_per_m2": 2627.0,
+      "bud_2024_count_per_m2": 4128.0,
+      "sugi_pollen_2024_count_per_cm2": 597.0,
+      "sugi_pollen_2025_count_per_cm2": 1686.0,
+      "bud_log_ratio_2024_over_2023": 0.451951,
+      "pollen_log_ratio_2025_over_2024": 1.038197
+    },
+    {
+      "prefecture_code": "35",
+      "prefecture_name_ja": "山口県",
+      "pollen_site_name_ja": "山口市",
+      "bud_2023_count_per_m2": 4194.0,
+      "bud_2024_count_per_m2": 7418.0,
+      "sugi_pollen_2024_count_per_cm2": 2337.0,
+      "sugi_pollen_2025_count_per_cm2": 10063.0,
+      "bud_log_ratio_2024_over_2023": 0.570255,
+      "pollen_log_ratio_2025_over_2024": 1.459997
+    },
+    {
+      "prefecture_code": "37",
+      "prefecture_name_ja": "香川県",
+      "pollen_site_name_ja": "三木町",
+      "bud_2023_count_per_m2": 4319.0,
+      "bud_2024_count_per_m2": 5575.0,
+      "sugi_pollen_2024_count_per_cm2": 190.0,
+      "sugi_pollen_2025_count_per_cm2": 1341.0,
+      "bud_log_ratio_2024_over_2023": 0.255268,
+      "pollen_log_ratio_2025_over_2024": 1.954147
+    },
+    {
+      "prefecture_code": "40",
+      "prefecture_name_ja": "福岡県",
+      "pollen_site_name_ja": "福岡市",
+      "bud_2023_count_per_m2": 1718.0,
+      "bud_2024_count_per_m2": 4074.0,
+      "sugi_pollen_2024_count_per_cm2": 1898.0,
+      "sugi_pollen_2025_count_per_cm2": 7185.0,
+      "bud_log_ratio_2024_over_2023": 0.863464,
+      "pollen_log_ratio_2025_over_2024": 1.331195
+    }
   ],
   "interpretation": [
     "環境省一次資料で2024年と2025年の花粉観測地点が同一と確認でき、かつ2023年・2024年の花芽量がそろう14都道府県では、前年比の対数比のPearson相関は弱い正の値にとどまった。",
