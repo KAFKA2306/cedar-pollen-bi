@@ -18,7 +18,7 @@ def main():
     assert html_type == "text/html", html_type
     html = html_body.decode("utf-8")
     assert "大阪府" in html
-    assert str(EXPECTED_JSON["observation_count_per_m2"]) in html
+    assert f'{EXPECTED_JSON["observation_count_per_m2"]:,}' in html
 
     json_status, json_type, json_body = fetch("data.json")
     assert json_status == 200, json_status
