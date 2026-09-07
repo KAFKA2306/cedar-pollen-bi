@@ -1,4 +1,6 @@
 import json
+import time
+import urllib.error
 import urllib.request
 from pathlib import Path
 
@@ -8,8 +10,16 @@ EXPECTED_JSON = json.loads(Path("samples/osaka/data.json").read_text(encoding="u
 
 def fetch(path=""):
     request = urllib.request.Request(BASE_URL + path, headers={"User-Agent": "cedar-pollen-bi-production-contract/1.0"})
-    with urllib.request.urlopen(request, timeout=20) as response:
-        return response.status, response.headers.get_content_type(), response.read()
+    for attempt in range(3):
+        try:
+            with urllib.request.urlopen(request, timeout=20) as response:
+                return response.status, response.headers.get_content_type(), response.read()
+        except urllib.error.HTTPError:
+            raise
+        except (urllib.error.URLError, ConnectionResetError):
+            if attempt == 2:
+                raise
+            time.sleep(1)
 
 
 def main():
