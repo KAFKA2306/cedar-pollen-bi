@@ -14,11 +14,13 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
       - name: Compile data tooling
-        run: python -m py_compile scripts/build_public_api.py scripts/analyze_bud_to_sugi_pollen.py tests/test_public_api.py tests/test_prefecture_sample.py tests/test_bud_to_sugi_pollen.py
+        run: python -m py_compile scripts/build_public_api.py scripts/analyze_bud_to_sugi_pollen.py tests/test_public_api.py tests/test_prefecture_sample.py tests/test_bud_to_sugi_pollen.py tests/test_production_sample.py
       - name: Check public BI JavaScript syntax
         run: node --check pollen-bi.js
       - name: Build deterministic public distribution
@@ -31,3 +33,5 @@ jobs:
         run: python tests/test_prefecture_sample.py
       - name: Verify committed artifacts are reproducible
         run: git diff --exit-code -- api/v1 samples/osaka analysis/*.json
+      - name: Verify Osaka sample in production
+        run: python tests/test_production_sample.py
