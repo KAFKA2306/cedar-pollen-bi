@@ -81,6 +81,8 @@ async function loadObservations() {
       ratio: numberOrNull(row[index.official_comparison_percent]),
       baselineNote: row[index.baseline_note] ?? "",
       sourceUrl: row[index.source_url] ?? "",
+      sourcePage: numberOrNull(row[index.source_page]),
+      sourceSection: row[index.source_section] ?? "",
     };
   });
 }
@@ -115,6 +117,15 @@ function comparisonReason(item) {
   }
   if (item?.baseline == null) return "過去平均なし";
   return "比較不能";
+}
+
+function sourceHref(item) {
+  return Number.isFinite(item.sourcePage) ? `${item.sourceUrl}#page=${item.sourcePage}` : item.sourceUrl;
+}
+
+function sourceLabel(item) {
+  const section = item.sourceSection || "資料";
+  return Number.isFinite(item.sourcePage) ? `環境省 ${section} ${item.sourcePage}ページ` : `環境省 ${section}`;
 }
 
 function matchesQuery(item, query) {
@@ -184,10 +195,10 @@ function renderTable(items) {
     if (selected === item.pref) tr.style.background = "rgb(23 107 77 / 0.08)";
     if (Number.isFinite(item.ratio)) {
       const itemCategory = category(item);
-      tr.innerHTML = `<td>${item.pref}</td><td>${item.region}</td><td>${item.ratio}%</td><td>${item.ratio - 100 > 0 ? "+" : ""}${item.ratio - 100}pt</td><td><span class="badge ${itemCategory}">${categoryLabel(itemCategory)}</span></td><td><a href="${item.sourceUrl}">環境省 資料1</a></td>`;
+      tr.innerHTML = `<td>${item.pref}</td><td>${item.region}</td><td>${item.ratio}%</td><td>${item.ratio - 100 > 0 ? "+" : ""}${item.ratio - 100}pt</td><td><span class="badge ${itemCategory}">${categoryLabel(itemCategory)}</span></td><td><a href="${sourceHref(item)}">${sourceLabel(item)}</a></td>`;
       tr.addEventListener("click", () => selectPrefecture(item.pref));
     } else {
-      tr.innerHTML = `<td>${item.pref}</td><td>${item.region}</td><td>—</td><td>—</td><td>${comparisonReason(item)}</td><td><a href="${item.sourceUrl}">環境省 資料1</a></td>`;
+      tr.innerHTML = `<td>${item.pref}</td><td>${item.region}</td><td>—</td><td>—</td><td>${comparisonReason(item)}</td><td><a href="${sourceHref(item)}">${sourceLabel(item)}</a></td>`;
     }
     rows.append(tr);
   }
